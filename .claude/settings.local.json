@@ -1,0 +1,9 @@
+{
+  "enabledMcpjsonServers": [
+    "filesystem",
+    "fetch",
+    "playwright",
+    "puppeteer"
+  ],
+  "enableAllProjectMcpServers": true
+}

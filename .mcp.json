@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "fetch": {
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "-y", "mcp-server-fetch-typescript"]
+    },
+    "filesystem": {
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:/Users/MANS/IdeaProjects/AI_WorkFlow"
+      ]
+    },
+    "playwright": {
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "-y", "@playwright/mcp@latest"]
+    },
+    "postman": {
+      "command": "cmd.exe",
+      "args": ["/c", "npx", "-y", "@postman/postman-mcp-server@latest"],
+      "env": {
+        "POSTMAN_API_KEY": "${POSTMAN_API_KEY}"
+      }
+    }
+  }
+}
