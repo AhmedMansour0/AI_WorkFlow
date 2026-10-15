@@ -1,0 +1,14 @@
+Playwright Automation for "Authentication" and "User Management" modules.
+
+Inputs:
+- Explore the `Project-Documents` directory (specifically read `Test_Cases.csv` and `exploration.md`).
+
+Steps to follow:
+1. Extract the test cases related to the "AUTH" and "ADM" (User Management) modules where `needs automation` is 'Yes' and `valid in scope` is 'Yes'.
+2. Deeply analyze `exploration.md` to grasp the actual UI locators, API endpoints.
+3. Implement the Playwright automation scripts for these cases using the Page Object Model (POM) design pattern.
+4. AUTONOMOUS EXECUTION: I will not dictate your folder structure or file naming. Explore the workspace, establish the POM architecture (Page classes and Spec files) yourself according to Playwright best practices, and write the code.
+5. Apply strict web-first assertions and handle any dynamic behaviors gracefully based on your exploration insights.
+6. SELF-HEALING PROTOCOL: If instructed to run these tests later and a failure occurs, you must autonomously analyze the stack trace, correct the locators/logic in your POM or tests, and log the fix in a file named `healing-log.md`.
+7. Use the filesystem tool to save all generated `.ts` files directly to the project. Do not print the full code in the chat interface. Just confirm when the automation suite is ready.
+8. Create the Execution Results in `Execution-outputs/Automation` to store the Playwright test results (Healing log, Bug Reports and Execution Summary ) Name Start with "Automation". The Execution Summary HTML MUST include a dedicated "Defect Reports" section containing all Bug Reports in full, and the same Bug Reports MUST ALSO be saved as a SEPARATE Markdown file named `Automation_Defect_Reports_YYYY-MM-DD.md`. Bug format: strictly English, title `[EndPoint][Title]`, sections Description, Steps to reproduce, Expected Result, Actual result.

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Workflow Solution Map</title>
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#F3F5F8; --surface:#FFFFFF; --surface-2:#EAEEF4;
+    --ink:#10151F; --ink-2:#45536B; --ink-muted:#7C8AA0;
+    --line:#DDE3EC; --line-strong:#C6CEDC;
+    --accent:#2A78D6; --accent-ink:#1C5CAB; --accent-wash:#E4EEFA;
+    --good:#0CA30C; --good-wash:rgba(12,163,12,0.10);
+    --warning:#C98A17; --serious:#D9673C;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --paper:#0A0E15; --surface:#111826; --surface-2:#16202F;
+      --ink:#EDF1F7; --ink-2:#B7C2D1; --ink-muted:#8290A6;
+      --line:#232E40; --line-strong:#324058;
+      --accent:#3987E5; --accent-ink:#8FBBEF; --accent-wash:#152A45;
+      --good:#35C24A; --good-wash:rgba(53,194,74,0.14);
+      --warning:#E3A730; --serious:#E88A5E;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --paper:#0A0E15; --surface:#111826; --surface-2:#16202F;
+    --ink:#EDF1F7; --ink-2:#B7C2D1; --ink-muted:#8290A6;
+    --line:#232E40; --line-strong:#324058;
+    --accent:#3987E5; --accent-ink:#8FBBEF; --accent-wash:#152A45;
+    --good:#35C24A; --good-wash:rgba(53,194,74,0.14);
+    --warning:#E3A730; --serious:#E88A5E;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-sans); font-size:14px; line-height:1.55; }
+  .wrap{ max-width:1200px; margin:0 auto; padding:40px 20px 60px; }
+  h1{ font-size:28px; font-weight:800; margin:0 0 6px; }
+  .lede{ margin:0 0 22px; color:var(--ink-2); font-size:15px; max-width:760px; }
+  code{ font-family:var(--font-mono); font-size:.9em; }
+  figure{ margin:0; background:var(--surface); border:1px solid var(--line-strong); border-radius:20px; padding:20px; }
+  .scroll{ overflow-x:auto; }
+  svg{ display:block; width:100%; height:auto; min-width:880px; color:var(--ink-2); }
+  figcaption{ margin-top:12px; padding-top:12px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-2); }
+  figcaption b{ color:var(--ink); }
+
+  .band{ fill:var(--accent-wash); stroke:var(--accent); stroke-width:1.4; }
+  .ms{ fill:var(--good-wash); stroke:var(--good); stroke-width:1.8; }
+  .out{ fill:var(--ink); }
+  .t{ fill:var(--ink); font-family:var(--font-sans); font-size:12px; }
+  .t-h{ font-size:14px; font-weight:750; fill:var(--good); }
+  .t-s{ fill:var(--ink-2); font-family:var(--font-sans); font-size:11px; }
+  .t-skill{ fill:var(--accent-ink); font-family:var(--font-mono); font-size:11px; }
+  .t-band{ fill:var(--accent-ink); font-weight:700; }
+  .t-out{ fill:var(--paper); font-family:var(--font-mono); font-size:12.5px; font-weight:700; }
+  .t-lane{ font-family:var(--font-sans); font-size:11px; font-weight:700; }
+  .w{ stroke:currentColor; fill:none; stroke-width:1.3; }
+  .l1{ stroke:var(--accent); stroke-width:1.8; fill:none; }
+  .l2{ stroke:var(--warning); stroke-width:1.8; fill:none; }
+  .l3{ stroke:var(--serious); stroke-width:1.8; fill:none; }
+  .heal{ stroke:var(--good); stroke-width:1.6; stroke-dasharray:5 4; fill:none; }
+
+  ol.flow{ margin:20px 0 0; padding:0; list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+  ol.flow li{ background:var(--surface); border:1px solid var(--line-strong); border-radius:12px; padding:10px 12px; font-size:13px; color:var(--ink-2); }
+  ol.flow li b{ color:var(--ink); display:block; margin-bottom:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>QA Workflow Solution Map</h1>
+  <p class="lede">Five milestones, each driven by a reusable skill and governed by <code>CLAUDE.md</code>. Each milestone writes one deliverable to disk, and later milestones read it back as input.</p>
+
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 1230 360" role="img" aria-label="Five milestones left to right. Each writes a deliverable: PRD.md, exploration.md, test_cases.csv, the execution report, and the Playwright suite. PRD.md feeds milestones 2 and 3; exploration.md feeds 3, 4 and 5; test_cases.csv feeds 4 and 5. Milestone 5 loops through self-healing.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+        <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--warning)"/></marker>
+        <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--serious)"/></marker>
+        <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--good)"/></marker>
+      </defs>
+
+      <rect class="band" x="20" y="14" width="1128" height="34" rx="9"/>
+      <text class="t t-band" x="584" y="36" text-anchor="middle">CLAUDE.md: standards for every milestone (formats · IDs · [EndPoint][Title] bugs · report template)</text>
+
+      <!-- Milestones: x = 20, 252, 484, 716, 948 · width 200 -->
+      <rect class="ms" x="20" y="66" width="200" height="86" rx="12"/>
+      <text class="t t-h" x="120" y="94" text-anchor="middle">1 · Generate PRD</text>
+      <text class="t-skill" x="120" y="114" text-anchor="middle">PRD_Generator</text>
+      <text class="t-s" x="120" y="134" text-anchor="middle">from live UI + API URLs</text>
+
+      <rect class="ms" x="252" y="66" width="200" height="86" rx="12"/>
+      <text class="t t-h" x="352" y="94" text-anchor="middle">2 · Explore UI &amp; API</text>
+      <text class="t-skill" x="352" y="114" text-anchor="middle">Exploration_Analyzer</text>
+      <text class="t-s" x="352" y="134" text-anchor="middle">locators · payloads · deviations</text>
+
+      <rect class="ms" x="484" y="66" width="200" height="86" rx="12"/>
+      <text class="t t-h" x="584" y="94" text-anchor="middle">3 · Design test cases</text>
+      <text class="t-skill" x="584" y="114" text-anchor="middle">Test-Case-Designer</text>
+      <text class="t-s" x="584" y="134" text-anchor="middle">positive · negative · boundary</text>
+
+      <rect class="ms" x="716" y="66" width="200" height="86" rx="12"/>
+      <text class="t t-h" x="816" y="94" text-anchor="middle">4 · Execute &amp; report</text>
+      <text class="t-skill" x="816" y="114" text-anchor="middle">Execution_Reporter</text>
+      <text class="t-s" x="816" y="134" text-anchor="middle">pass / fail · bug reports</text>
+
+      <rect class="ms" x="948" y="66" width="200" height="86" rx="12"/>
+      <text class="t t-h" x="1048" y="94" text-anchor="middle">5 · Automate &amp; heal</text>
+      <text class="t-skill" x="1048" y="114" text-anchor="middle">playwright-best-practices</text>
+      <text class="t-s" x="1048" y="134" text-anchor="middle">Playwright POM · self-healing</text>
+
+      <!-- writes -->
+      <line class="w" x1="135" y1="154" x2="135" y2="190" marker-end="url(#ar)"/>
+      <line class="w" x1="367" y1="154" x2="367" y2="190" marker-end="url(#ar)"/>
+      <line class="w" x1="599" y1="154" x2="599" y2="190" marker-end="url(#ar)"/>
+      <line class="w" x1="831" y1="154" x2="831" y2="190" marker-end="url(#ar)"/>
+      <line class="w" x1="1063" y1="154" x2="1063" y2="190" marker-end="url(#ar)"/>
+      <text class="t-s" x="142" y="176">writes</text>
+
+      <!-- Deliverables -->
+      <rect class="out" x="50" y="192" width="170" height="50" rx="10"/><text class="t-out" x="135" y="222" text-anchor="middle">PRD.md</text>
+      <rect class="out" x="282" y="192" width="170" height="50" rx="10"/><text class="t-out" x="367" y="222" text-anchor="middle">exploration.md</text>
+      <rect class="out" x="514" y="192" width="170" height="50" rx="10"/><text class="t-out" x="599" y="222" text-anchor="middle">test_cases.csv</text>
+      <rect class="out" x="746" y="192" width="170" height="50" rx="10"/><text class="t-out" x="831" y="214" text-anchor="middle">Execution report</text><text class="t-out" x="831" y="231" text-anchor="middle" style="font-weight:400;font-size:11px">+ defect reports</text>
+      <rect class="out" x="978" y="192" width="170" height="50" rx="10"/><text class="t-out" x="1063" y="214" text-anchor="middle">Playwright suite</text><text class="t-out" x="1063" y="231" text-anchor="middle" style="font-weight:400;font-size:11px">+ run report</text>
+
+      <!-- Self-healing loop on M5 -->
+      <path class="heal" d="M1150,217 C1190,217 1190,109 1152,109" marker-end="url(#a4)"/>
+      <text class="t-lane" x="1188" y="160" style="fill:var(--good)">self-</text>
+      <text class="t-lane" x="1188" y="174" style="fill:var(--good)">heal</text>
+
+      <!-- Handoffs -->
+      <path class="l1" d="M120,242 V280 H490 V155" marker-end="url(#a1)"/>
+      <path class="l1" d="M258,280 V155" marker-end="url(#a1)"/>
+      <text class="t-lane" x="128" y="274" style="fill:var(--accent-ink)">PRD.md → 2, 3</text>
+
+      <path class="l2" d="M352,242 V304 H962 V155" marker-end="url(#a2)"/>
+      <path class="l2" d="M498,304 V155" marker-end="url(#a2)"/>
+      <path class="l2" d="M730,304 V155" marker-end="url(#a2)"/>
+      <text class="t-lane" x="530" y="298" style="fill:var(--warning)">exploration.md → 3, 4, 5</text>
+
+      <path class="l3" d="M584,242 V328 H970 V155" marker-end="url(#a3)"/>
+      <path class="l3" d="M738,328 V155" marker-end="url(#a3)"/>
+      <text class="t-lane" x="776" y="322" style="fill:var(--serious)">test_cases.csv → 4, 5</text>
+    </svg>
+    </div>
+    <figcaption><b>How to read it:</b> green boxes are the milestones, with the skill that drives each one. Solid boxes below them are the files they write. Coloured lines show which later milestones read each file. Milestone 5 loops: failing tests are classified first, test bugs are fixed, and product bugs are reported, never hidden.</figcaption>
+  </figure>
+
+  <ol class="flow">
+    <li><b>1 · PRD</b>Scan the live UI and API and write requirements with stable IDs.</li>
+    <li><b>2 · Explore</b>Check the PRD against the real build; capture locators, API payloads and deviations.</li>
+    <li><b>3 · Test cases</b>Turn requirements and findings into CSV test cases, flagged for scope and automation.</li>
+    <li><b>4 · Execute</b>Mark each case pass or fail and publish the HTML report and the bug reports.</li>
+    <li><b>5 · Automate</b>Build the Playwright suite, run it, and self-heal test failures.</li>
+  </ol>
+</div>
+</body>
+</html>

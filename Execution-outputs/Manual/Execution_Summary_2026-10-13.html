@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OrangeHRM — QA Execution Report 2026-10-13</title>
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#F3F5F8; --surface:#FFFFFF; --surface-2:#EAEEF4;
+    --ink:#10151F; --ink-2:#45536B; --ink-muted:#7C8AA0;
+    --line:#DDE3EC; --line-strong:#C6CEDC;
+    --accent:#2A78D6; --accent-ink:#1C5CAB; --accent-wash:#E4EEFA;
+    --good:#0CA30C; --warning:#C98A17; --serious:#D9673C; --critical:#D03B3B;
+    --good-wash:rgba(12,163,12,0.12); --warning-wash:rgba(250,178,25,0.16);
+    --serious-wash:rgba(236,131,90,0.14); --critical-wash:rgba(208,59,59,0.12);
+    --shadow:rgba(16,21,31,0.08);
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Consolas,"Courier New",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --paper:#0A0E15; --surface:#111826; --surface-2:#16202F;
+      --ink:#EDF1F7; --ink-2:#B7C2D1; --ink-muted:#8290A6;
+      --line:#232E40; --line-strong:#324058;
+      --accent:#3987E5; --accent-ink:#8FBBEF; --accent-wash:#152A45;
+      --good:#35C24A; --warning:#E3A730; --serious:#E88A5E; --critical:#EA5B5B;
+      --good-wash:rgba(53,194,74,0.16); --warning-wash:rgba(227,167,48,0.16);
+      --serious-wash:rgba(232,138,94,0.16); --critical-wash:rgba(234,91,91,0.18);
+      --shadow:rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --paper:#0A0E15; --surface:#111826; --surface-2:#16202F;
+    --ink:#EDF1F7; --ink-2:#B7C2D1; --ink-muted:#8290A6;
+    --line:#232E40; --line-strong:#324058;
+    --accent:#3987E5; --accent-ink:#8FBBEF; --accent-wash:#152A45;
+    --good:#35C24A; --warning:#E3A730; --serious:#E88A5E; --critical:#EA5B5B;
+    --good-wash:rgba(53,194,74,0.16); --warning-wash:rgba(227,167,48,0.16);
+    --serious-wash:rgba(232,138,94,0.16); --critical-wash:rgba(234,91,91,0.18);
+    --shadow:rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"]{
+    color-scheme: light;
+    --paper:#F3F5F8; --surface:#FFFFFF; --surface-2:#EAEEF4;
+    --ink:#10151F; --ink-2:#45536B; --ink-muted:#7C8AA0;
+    --line:#DDE3EC; --line-strong:#C6CEDC;
+    --accent:#2A78D6; --accent-ink:#1C5CAB; --accent-wash:#E4EEFA;
+    --good:#0CA30C; --warning:#C98A17; --serious:#D9673C; --critical:#D03B3B;
+    --good-wash:rgba(12,163,12,0.12); --warning-wash:rgba(250,178,25,0.16);
+    --serious-wash:rgba(236,131,90,0.14); --critical-wash:rgba(208,59,59,0.12);
+    --shadow:rgba(16,21,31,0.08);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:var(--paper); color:var(--ink); font-family:var(--font-sans);
+        font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; transition-duration:.001ms !important; } }
+  a{ color:var(--accent-ink); }
+  .wrap{ max-width:960px; margin:0 auto; padding:32px 20px 80px; }
+  .dashboard-card{ background:var(--surface); border:1px solid var(--line-strong); border-radius:24px; padding:24px; }
+  code,.mono{ font-family:var(--font-mono); font-size:.92em; }
+  .header{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:24px; }
+  .header-main{ flex:1 1 auto; min-width:280px; }
+  .header h1{ font-size:32px; font-weight:800; margin:0 0 8px; }
+  .header .meta{ color:var(--ink-muted); font-size:13px; }
+  .section-num{ font-size:17px; font-weight:700; color:var(--ink); margin:32px 0 14px; text-transform:none; letter-spacing:normal; border-bottom:none; padding-bottom:0; }
+  .summary-layout{ display:flex; align-items:center; gap:36px; flex-wrap:wrap; margin-bottom:28px; }
+  .donut-block{ display:flex; align-items:center; gap:20px; flex-shrink:0; }
+  .stats-block{ flex:1 1 360px; min-width:280px; display:flex; flex-direction:column; gap:14px; }
+  .scard{ text-align:center; }
+  .scard .lbl{ font-size:15px; font-weight:700; color:var(--ink-muted); margin-top:4px; }
+  .scard .val{ font-size:24px; font-weight:700; color:var(--ink); }
+  .scard .val.pass{ color:var(--good); }
+  .scard .val.fail{ color:var(--critical); }
+  .scard .val.blocked{ color:var(--serious); }
+  .scard-total .lbl{ font-size:17px; margin-top:6px; }
+  .scard-total .val{ font-size:28px; }
+  .time-breakdown-link{ display:inline-block; margin-top:6px; font-size:12px; font-weight:600; color:var(--accent-ink); text-decoration:underline; }
+  summary.section-summary-flex > .section-count-badges,
+  summary.section-summary-flex > .section-count-badge{ float:right; }
+  .section-count-badge{ display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:var(--surface); border:1px solid var(--line-strong); border-radius:12px; padding:6px 20px;
+      text-transform:none; letter-spacing:normal; flex-shrink:0; }
+  .section-count-badge .scb-val{ font-size:20px; font-weight:700; color:var(--accent-ink); line-height:1.2; }
+  .section-count-badge .scb-lbl{ font-size:11px; color:var(--ink-muted); margin-top:1px; }
+  .section-count-badges{ display:flex; gap:10px; flex-shrink:0; }
+  .scb-val.serious{ color:var(--serious); }
+  .scb-val.accent{ color:var(--accent-ink); }
+  .summary-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; }
+  .donut{ width:280px; height:280px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .donut-hole{ width:190px; height:190px; border-radius:50%; background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .donut-pct{ font-size:34px; font-weight:800; color:var(--ink); }
+  .donut-sub{ font-size:15px; color:var(--ink-muted); }
+  .donut-legend{ display:flex; flex-direction:column; gap:10px; }
+  .litem{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-2); white-space:nowrap; }
+  .litem .lcount{ margin-left:4px; color:var(--ink-muted); }
+  .swatch{ width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+  .swatch.pass{ background:var(--good); }
+  .swatch.fail{ background:var(--critical); }
+  .swatch.blocked{ background:var(--serious); }
+  h2{ font-size:15px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2);
+      border-bottom:1px solid var(--line); padding-bottom:6px; margin:32px 0 12px; }
+  .section-collapse{ margin:0; }
+  .section-collapse > summary{ font-size:15px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2);
+      border-bottom:1px solid var(--line); padding-bottom:6px; margin:32px 0 12px; cursor:pointer; }
+  .section-collapse > summary::-webkit-details-marker{ color:var(--ink-muted); }
+  .tc-section > summary{ margin-top:0; }
+  .tc-category{ background:var(--surface); border:1px solid var(--line-strong); border-radius:12px; margin-bottom:10px; }
+  .tc-category > summary{ display:flex; align-items:center; gap:10px; padding:14px 16px; cursor:pointer; list-style:none; }
+  .tc-category > summary::-webkit-details-marker{ display:none; }
+  .cat-icon{ font-size:16px; flex-shrink:0; width:22px; display:inline-flex; align-items:center; justify-content:center; }
+  .cat-name{ font-weight:700; color:var(--ink); flex-shrink:0; }
+  .cat-counts{ display:flex; gap:14px; margin-left:auto; font-size:12px; }
+  .cc{ font-weight:600; }
+  .cc.pass{ color:var(--good); }
+  .cc.fail{ color:var(--critical); }
+  .cc.blocked{ color:var(--serious); }
+  .cat-chev{ display:inline-block; width:9px; flex-shrink:0; color:var(--ink-muted); font-size:10px; transition:transform .15s ease; }
+  .cat-chev::before{ content:'\25B8'; }
+  details.tc-category[open] > summary .cat-chev{ transform:rotate(90deg); }
+  .tc-category-body{ padding:0 16px 16px; }
+  .tc-category.cat-empty{ display:none; }
+  .tc{ background:var(--surface); border:1px solid var(--line-strong); border-left-width:4px; border-radius:12px; padding:16px 18px; margin-bottom:8px; }
+  .tc.PASS{ border-left-color:var(--good); }
+  .tc.FAIL{ border-left-color:var(--critical); }
+  .tc.BLOCKED{ border-left-color:var(--serious); }
+  .tc-head{ display:flex; justify-content:space-between; gap:10px; font-weight:600; }
+  .badge{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:5px; }
+  .badge.PASS{ background:var(--good-wash); color:var(--good); }
+  .badge.FAIL{ background:var(--critical-wash); color:var(--critical); }
+  .badge.BLOCKED{ background:var(--serious-wash); color:var(--serious); }
+  .tc .row{ margin-top:6px; font-size:13px; color:var(--ink-2); overflow-wrap:anywhere; }
+  .tc .row b{ color:var(--ink); }
+  .view-tc-wrap{ margin-top:10px; }
+  .view-tc > summary{ display:block; text-align:right; color:var(--accent-ink); text-decoration:underline; cursor:pointer; font-size:12px; font-weight:600; list-style:none; }
+  .view-tc > summary::-webkit-details-marker{ display:none; }
+  .view-tc-body{ margin-top:8px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; font-size:13px; }
+  .vtc-h{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-muted); margin:12px 0 4px; }
+  .vtc-h:first-child{ margin-top:0; }
+  .vtc-p{ color:var(--ink-2); overflow-wrap:anywhere; }
+  .vtc-steps{ margin:0; padding-left:18px; color:var(--ink-2); }
+  .vtc-steps li{ margin-bottom:4px; overflow-wrap:anywhere; }
+  details.evidence, details.hops{ margin-top:6px; }
+  details.evidence summary, details.hops summary{ cursor:pointer; font-size:12px; color:var(--accent-ink); }
+  details.evidence .ev-body{ margin-top:4px; padding:8px 10px; background:var(--surface-2); border-radius:6px; font-size:12px; overflow-wrap:anywhere; }
+  .hop{ padding:6px 0; border-top:1px solid var(--line); font-size:12px; }
+  .hop:first-child{ border-top:none; }
+  .hop-endpoint{ font-weight:600; color:var(--ink); }
+  .hop .hd{ color:var(--ink-muted); margin-top:2px; overflow-wrap:anywhere; }
+  .hop .hd.hop-reqres.js-hidden{ display:none; }
+  .hop-reqres-toggle{ margin-left:8px; font-size:11px; font-weight:600; color:var(--accent-ink); text-decoration:underline; cursor:pointer; }
+  .hop-reqres-panel{ margin-top:10px; display:flex; flex-direction:column; gap:18px; }
+  .hop-reqres-panel.js-hidden{ display:none; }
+  .rr-title{ font-size:15px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+  .rr-line{ font-size:13px; color:var(--ink-2); margin-bottom:10px; font-family:var(--font-mono); overflow-wrap:anywhere; }
+  .rr-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); margin:10px 0 6px; }
+  .rr-box{ background:#0B0E15; color:#D7DEE8; border-radius:10px; padding:14px 16px; font-family:var(--font-mono); font-size:12.5px; overflow:auto; }
+  .rr-headers-box .rr-h-line{ margin-bottom:14px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .rr-headers-box .rr-h-line:last-child{ margin-bottom:0; }
+  .rr-body-box{ max-height:340px; }
+  .rr-body-box pre{ margin:0; white-space:pre; }
+  .rr-redacted{ color:#8290A6; }
+  .rr-note{ font-size:11px; color:var(--ink-muted); font-style:italic; margin-top:6px; }
+  .tc-status-row{ display:flex; align-items:center; gap:10px; }
+  .tc-reqres-toggle{ margin-left:auto; }
+  .tc-reqres-panel{ margin-top:10px; display:flex; flex-direction:column; gap:18px; }
+  .tc-reqres-panel.js-hidden{ display:none; }
+  .finding{ border-radius:12px; padding:10px 12px; margin-bottom:8px; font-size:13px; overflow-wrap:anywhere; }
+  .finding.defect{ background:var(--serious-wash); border:1px solid var(--serious); }
+  .finding.unknown_resolution{ background:var(--accent-wash); border:1px solid var(--accent); }
+  .finding .kind{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+  .cleanup{ background:var(--warning-wash); border:1px solid var(--warning); border-radius:12px; padding:12px 14px; }
+  .cleanup ul{ margin:6px 0 0; padding-left:18px; }
+  .cleanup li{ margin-bottom:6px; overflow-wrap:anywhere; }
+  .empty{ color:var(--ink-muted); font-size:13px; font-style:italic; }
+.meta-card{ margin-top:8px; }
+.fields{ display:flex; flex-direction:column; gap:4px; margin:4px 0 6px; }
+.fields.run-meta{ margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+.field-row{ display:flex; flex-wrap:wrap; gap:4px 28px; }
+.field{ font-size:14px; display:flex; gap:6px; }
+.field .k{ color:var(--ink-2); font-weight:700; font-size:15px; letter-spacing:normal; text-transform:none; flex-shrink:0; }
+.field .k::after{ content:':'; }
+.field .v{ color:var(--ink); }
+.tc-actions{ display:flex; justify-content:flex-end; gap:8px; margin:32px 0 8px; }
+.tc-actions button{ padding:7px 12px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2); font-size:12px; font-weight:600; cursor:pointer; }
+.tc-cat-actions{ display:flex; justify-content:flex-end; gap:8px; margin:4px 0 10px; }
+.tc-cat-actions button{ padding:5px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2); font-size:11px; font-weight:600; cursor:pointer; }
+.tc-cat-actions button:hover{ background:var(--surface-2); }
+.tc-actions button:hover{ background:var(--surface-2); }
+.tc-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; position:sticky; top:0; z-index:5; }
+.tc-toolbar input[type="search"]{ flex:1 1 240px; min-width:180px; padding:7px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:13px; }
+.tc-toolbar select{ padding:7px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:13px; }
+.tc-toolbar button{ padding:7px 12px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2); font-size:12px; font-weight:600; cursor:pointer; }
+.tc-toolbar button:hover{ background:var(--surface-2); }
+#tcResetFilters{ color:var(--critical); border-color:var(--critical); }
+#tcResetFilters:hover{ background:var(--critical-wash); }
+.tc-toolbar .tc-count{ font-size:12px; color:var(--ink-muted); margin-left:auto; white-space:nowrap; }
+details.tc > summary.tc-head{ cursor:pointer; list-style:none; }
+details.tc > summary.tc-head::-webkit-details-marker{ display:none; }
+.tc-head .chev{ display:inline-block; width:9px; flex-shrink:0; color:var(--ink-muted); font-size:10px; transition:transform .15s ease; align-self:center; }
+.tc-head .chev::before{ content:'\25B8'; }
+details.tc[open] > summary.tc-head .chev{ transform:rotate(90deg); }
+details.tc.js-hidden{ display:none; }
+.tc-no-results{ padding:28px 20px; text-align:center; color:var(--critical); font-size:18px; font-weight:700; background:var(--critical-wash); border:1px solid var(--critical); border-radius:12px; margin-bottom:10px; }
+.tc-no-results.js-hidden{ display:none; }
+.erratum{ background:var(--warning-wash); border:1px solid var(--warning); border-radius:12px; padding:14px 18px; margin-bottom:24px; font-size:13px; color:var(--ink); line-height:1.55; }
+.erratum .e-title{ font-weight:700; color:var(--warning); margin-bottom:4px; font-size:13px; }
+/* --- optional-block CSS (kept so every run's report can use them; unused rules are harmless) --- */
+.scard .val.accent{ color:var(--accent-ink); }
+.tc-subhead{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:14px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--line); }
+.tc-subhead:first-child{ margin-top:4px; }
+.tc-subhead-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.tc-subhead-label.pos{ color:var(--good); }
+.tc-subhead-label.neg{ color:var(--critical); }
+.tc-subhead-counts{ display:flex; gap:12px; font-size:11px; }
+.rr-attempt-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent-ink); margin:0 0 4px; }
+</style>
+</head><body><div class="wrap">
+
+<div class="header"><div class="header-main">
+<h1>QA Execution Report &mdash; 2026-10-13</h1>
+<div class="meta">OrangeHRM OS 5.9 &middot; Authentication &amp; Admin / User Management &middot; UI and API</div>
+</div></div>
+
+<div class="meta-card dashboard-card">
+<div class="fields">
+<div class="field"><span class="k">Scope</span><span class="v">Authentication (Login) and Admin &rarr; User Management, UI and API &mdash; all 50 test cases of <span class="mono">Test_Cases.csv</span> marked <span class="mono">valid in scope = Yes</span></span></div>
+<div class="field-row">
+<div class="field"><span class="k">Coverage</span><span class="v">50 of 50 designed cases (0 excluded as out of scope)</span></div>
+</div>
+<div class="field"><span class="k">Description</span><span class="v">Execution evaluated against the live-exploration evidence recorded in <span class="mono">exploration.md</span> (2026-10-12). 28 passed, 3 failed and 19 are blocked &mdash; blocked meaning the exploration records no direct observation for the behaviour the case asserts, or the pre-condition cannot be met on the demo instance. 3 defects were raised, one per failing case.</span></div>
+</div>
+<div class="fields run-meta">
+<div class="field-row">
+<div class="field"><span class="k">System Under Test</span><span class="v">OrangeHRM OS 5.9</span></div>
+<div class="field"><span class="k">Environment</span><span class="v">public demo &middot; https://opensource-demo.orangehrmlive.com/</span></div>
+</div>
+<div class="field"><span class="k">Evidence Source</span><span class="v">Project-Documents/exploration.md &mdash; live browser automation and authenticated fetch, 2026-10-12</span></div>
+<div class="field"><span class="k">Execution Date</span><span class="v">2026-10-13</span></div>
+<div class="field"><span class="k">Status</span><span class="v">COMPLETE</span></div>
+</div>
+</div>
+
+<h2 class="section-num">1. Executive Summary</h2>
+<div class="summary-layout">
+<div class="donut-block">
+<div class="donut" style="background:conic-gradient(var(--good) 0% 56%, var(--critical) 56% 62%, var(--serious) 62% 100%)">
+<div class="donut-hole"><div class="donut-pct">56%</div><div class="donut-sub">pass rate</div></div>
+</div>
+<div class="donut-legend">
+<div class="litem"><span class="swatch pass"></span>Passed <span class="lcount">28 / 50</span></div>
+<div class="litem"><span class="swatch fail"></span>Failed <span class="lcount">3 / 50</span></div>
+<div class="litem"><span class="swatch blocked"></span>Blocked <span class="lcount">19 / 50</span></div>
+</div>
+</div>
+<div class="stats-block">
+<div class="scard scard-total dashboard-card"><div class="val">50</div><div class="lbl">Total In-Scope Test Cases</div></div>
+<div class="summary-cards">
+<div class="scard dashboard-card"><div class="val pass">28</div><div class="lbl">Passed</div></div>
+<div class="scard dashboard-card"><div class="val fail">3</div><div class="lbl">Failed</div></div>
+<div class="scard dashboard-card"><div class="val blocked">19</div><div class="lbl">Blocked</div></div>
+</div>
+<div class="scard scard-total dashboard-card"><div class="val accent">90.3%</div><div class="lbl">Pass Rate of Evaluated Cases (28 of 31)</div></div>
+</div>
+</div>
+
+<div class="erratum"><div class="e-title">How statuses were assigned</div>
+A case is <b>Pass</b> or <b>Fail</b> only where <span class="mono">exploration.md</span> records a direct observation covering the behaviour it asserts. Where the behaviour was never exercised, or only part of the assertion was observed, the case is marked <b>Blocked</b> with the reason stated in its Actual Result rather than being assumed to pass. The 19 blocked cases are the explicit re-run backlog for the next execution round.
+</div>
+
+<div class="tc-actions">
+<button type="button" id="tcExpandAll">Expand all</button>
+<button type="button" id="tcCollapseAll">Collapse all</button>
+</div>
+
+<details class="section-collapse tc-section" open>
+<summary class="section-summary-flex">2. Execution Details<span class="section-count-badges"><span class="section-count-badge"><span class="scb-val">28</span><span class="scb-lbl">Passed</span></span><span class="section-count-badge"><span class="scb-val serious">3</span><span class="scb-lbl">Failed</span></span><span class="section-count-badge"><span class="scb-val accent">19</span><span class="scb-lbl">Blocked</span></span></span></summary>
+
+<div class="tc-toolbar dashboard-card">
+<input type="search" id="tcSearch" placeholder="Search by ID, description, endpoint, message text...">
+<select id="tcStatusFilter">
+<option value="">All statuses</option>
+<option value="PASS">PASS</option>
+<option value="FAIL">FAIL</option>
+<option value="BLOCKED">BLOCKED</option>
+</select>
+<select id="tcCategoryFilter">
+<option value="">All categories</option>
+<option value="auth-ui">Authentication — UI</option>
+<option value="auth-api">Authentication — API</option>
+<option value="admin-ui">Admin / User Management — UI</option>
+<option value="admin-api">Admin / User Management — API</option>
+</select>
+<button type="button" id="tcResetFilters">Reset</button>
+<span id="tcCount" class="tc-count"></span>
+</div>
+<div id="tcNoResults" class="tc-no-results js-hidden">No test cases match your search. Try a different keyword, or clear the search/filters above.</div>
+
+<details class="tc-category" data-cat="auth-ui" open>
+<summary><span class="cat-icon">&#128274;</span><span class="cat-name">Authentication — UI</span><span class="cat-counts"><span class="cc pass">7 passed</span><span class="cc fail">1 failed</span><span class="cc blocked">8 blocked</span></span><span class="cat-chev"></span></summary>
+<div class="tc-category-body">
+<div class="tc-cat-actions"><button type="button" class="tc-cat-expand">Expand all</button><button type="button" class="tc-cat-collapse">Collapse all</button></div>
+<details class="tc FAIL">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-007</span> &mdash; FR-AUTH-3 / NFR-SEC: Disabled account must not be distinguishable from invalid credentials</span><span class="badge FAIL">FAIL</span></summary>
+<div class="row"><b>Pre-conditions:</b> A disabled user account with a known correct password exists</div>
+<div class="row"><b>Expected:</b> Login is refused with the generic "Invalid credentials" message. KNOWN DEVIATION: the build returns "Account disabled", disclosing both account existence and password correctness - exploration D-02; expected to FAIL and feed the bug report</div>
+<div class="row"><b>Actual:</b> The disabled account qaprobe9901 submitted with its CORRECT password qaProbe1 returned the banner "Account disabled", not the generic "Invalid credentials". The same account with a wrong password returned "Invalid credentials", so the two outcomes are distinguishable and disclose both that the account exists and that the guessed password was correct. Raised as BUG-01.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge FAIL">FAIL</span></div> <div class="row"><b>Defect:</b> <a href="#BUG-01">BUG-01</a> &mdash; full report in section 3, Defect Reports</div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A5; §3.7 steps 2-3; §6 D-02</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">A disabled user account with a known correct password exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter the disabled account username</li><li>Enter its CORRECT password</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Login is refused with the generic "Invalid credentials" message. KNOWN DEVIATION: the build returns "Account disabled", disclosing both account existence and password correctness - exploration D-02; expected to FAIL and feed the bug report</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">The disabled account qaprobe9901 submitted with its CORRECT password qaProbe1 returned the banner "Account disabled", not the generic "Invalid credentials". The same account with a wrong password returned "Invalid credentials", so the two outcomes are distinguishable and disclose both that the account exists and that the guessed password was correct. Raised as BUG-01.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-005</span> &mdash; FR-AUTH-3: Invalid password is rejected without field disclosure</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Valid Admin account exists; no active session</div>
+<div class="row"><b>Expected:</b> POST /auth/validate returns 302 back to /auth/login; banner .oxd-alert--error displays exactly "Invalid credentials"; user remains unauthenticated on the login screen</div>
+<div class="row"><b>Actual:</b> POST /auth/validate returned 302 with Location /auth/login and the re-rendered page displayed exactly "Invalid credentials" in the .oxd-alert.oxd-alert--error banner. The user remained unauthenticated on the login screen and no field-level disclosure was made.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A2; §1.2 locator table</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Valid Admin account exists; no active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter username "Admin"</li><li>Enter password "wrongpass123"</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">POST /auth/validate returns 302 back to /auth/login; banner .oxd-alert--error displays exactly "Invalid credentials"; user remains unauthenticated on the login screen</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">POST /auth/validate returned 302 with Location /auth/login and the re-rendered page displayed exactly "Invalid credentials" in the .oxd-alert.oxd-alert--error banner. The user remained unauthenticated on the login screen and no field-level disclosure was made.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-008</span> &mdash; FR-AUTH-3: Disabled account with a wrong password (contrast case for D-02)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> A disabled user account exists</div>
+<div class="row"><b>Expected:</b> Banner displays "Invalid credentials". Compare against TC-AUTH-UI-007: the two messages must be identical; any difference confirms the D-02 account-state disclosure</div>
+<div class="row"><b>Actual:</b> The disabled account submitted with an incorrect password (qaprobe9901 / totallyWrong1) returned the banner "Invalid credentials", as expected for this case. The contrast against TC-AUTH-UI-007 is what confirms the D-02 account-state disclosure; that failure is reported under TC-AUTH-UI-007 and BUG-01 rather than here.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.7 step 3</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">A disabled user account exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter the disabled account username</li><li>Enter an incorrect password</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Banner displays "Invalid credentials". Compare against TC-AUTH-UI-007: the two messages must be identical; any difference confirms the D-02 account-state disclosure</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">The disabled account submitted with an incorrect password (qaprobe9901 / totallyWrong1) returned the banner "Invalid credentials", as expected for this case. The contrast against TC-AUTH-UI-007 is what confirms the D-02 account-state disclosure; that failure is reported under TC-AUTH-UI-007 and BUG-01 rather than here.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-010</span> &mdash; FR-AUTH-4: Username empty with password supplied</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> "Required" is displayed against the Username field only; no request is sent to /auth/validate</div>
+<div class="row"><b>Actual:</b> Not exercised. The exploration recorded only the both-fields-empty case (A1: no network request fires and "Required" renders under both fields). The single-field variant with a password supplied was never submitted, so neither the field-scoped message nor the absence of a /auth/validate request can be asserted from the available evidence.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A1</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Leave Username empty</li><li>Enter password "admin123"</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Required" is displayed against the Username field only; no request is sent to /auth/validate</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. The exploration recorded only the both-fields-empty case (A1: no network request fires and "Required" renders under both fields). The single-field variant with a password supplied was never submitted, so neither the field-scoped message nor the absence of a /auth/validate request can be asserted from the available evidence.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-011</span> &mdash; FR-AUTH-4: Password empty with username supplied</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> "Required" is displayed against the Password field only; no request is sent to /auth/validate</div>
+<div class="row"><b>Actual:</b> Not exercised. As with TC-AUTH-UI-010, only the both-fields-empty case was recorded. The variant with a username supplied and the password left empty was never submitted, so the Password-scoped "Required" message is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A1</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter username "Admin"</li><li>Leave Password empty</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Required" is displayed against the Password field only; no request is sent to /auth/validate</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. As with TC-AUTH-UI-010, only the both-fields-empty case was recorded. The variant with a username supplied and the password left empty was never submitted, so the Password-scoped "Required" message is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-014</span> &mdash; FR-AUTH-2: Password is case-sensitive (negative)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Valid Admin account exists</div>
+<div class="row"><b>Expected:</b> Login is refused with "Invalid credentials" - the password comparison is case-sensitive</div>
+<div class="row"><b>Actual:</b> Not exercised. A2 covers an arbitrary wrong password ("wrongpass123") but no case-variant of the correct password ("ADMIN123") was ever submitted, so password case sensitivity remains unproven.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A2 (adjacent only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Valid Admin account exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter username "Admin"</li><li>Enter password "ADMIN123" (upper case)</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Login is refused with "Invalid credentials" - the password comparison is case-sensitive</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. A2 covers an arbitrary wrong password ("wrongpass123") but no case-variant of the correct password ("ADMIN123") was ever submitted, so password case sensitivity remains unproven.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-018</span> &mdash; NFR-SEC: Password field masks its input</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> The Password input has type="password" and the typed characters are visually masked on screen</div>
+<div class="row"><b>Actual:</b> The login markup captured in §1.1 renders the password control as &lt;input type="password" name="password" class="oxd-input oxd-input--active"&gt;. The native password type masks the typed characters; no plain-text rendering of the value was observed.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.1 login form markup</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Type a value into the Password field</li><li>Inspect the input type attribute and the rendered value</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The Password input has type="password" and the typed characters are visually masked on screen</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">The login markup captured in §1.1 renders the password control as &lt;input type="password" name="password" class="oxd-input oxd-input--active"&gt;. The native password type masks the typed characters; no plain-text rendering of the value was observed.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-019</span> &mdash; FR-AUTH-5: Forgot-password entry point navigates to the reset screen</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> Browser navigates to /web/index.php/auth/requestPasswordResetCode; heading reads "Reset Password" and a single Username field is rendered</div>
+<div class="row"><b>Actual:</b> §1.4 records /web/index.php/auth/requestPasswordResetCode as reached from the login screen, with the heading "Reset Password" and a single Username field. Automation note: the entry point is rendered as &lt;p class="orangehrm-login-forgot"&gt;, not an anchor, so it cannot be located as a link.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.4</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Click the "Forgot your password?" element (.orangehrm-login-forgot)</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Browser navigates to /web/index.php/auth/requestPasswordResetCode; heading reads "Reset Password" and a single Username field is rendered</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">§1.4 records /web/index.php/auth/requestPasswordResetCode as reached from the login screen, with the heading "Reset Password" and a single Username field. Automation note: the entry point is rendered as &lt;p class="orangehrm-login-forgot"&gt;, not an anchor, so it cannot be located as a link.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-020</span> &mdash; FR-AUTH-5: Reset Password screen accepts a username and submits</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> The form posts to /web/index.php/auth/requestResetPassword and a confirmation screen is displayed. Email delivery itself is excluded per OOS-12</div>
+<div class="row"><b>Actual:</b> Not exercised. §5 records POST /web/index.php/auth/requestResetPassword as "Form captured, not submitted" — the form action, the hidden _token and the Username field are known, but no submission was made and no confirmation screen was observed.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.4; §5 endpoint inventory</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to /auth/requestPasswordResetCode</li><li>Enter a valid username</li><li>Click the "Reset Password" submit button</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The form posts to /web/index.php/auth/requestResetPassword and a confirmation screen is displayed. Email delivery itself is excluded per OOS-12</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. §5 records POST /web/index.php/auth/requestResetPassword as "Form captured, not submitted" — the form action, the hidden _token and the Username field are known, but no submission was made and no confirmation screen was observed.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-021</span> &mdash; FR-AUTH-5: Reset Password Cancel returns to the login screen</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> User is returned to the login screen with no reset request submitted</div>
+<div class="row"><b>Actual:</b> Not exercised. The Cancel button (type="button", class ...--cancel) was observed in the reset-screen markup but was never clicked, so the return-to-login behaviour is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.4</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to /auth/requestPasswordResetCode</li><li>Click the Cancel button</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">User is returned to the login screen with no reset request submitted</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. The Cancel button (type="button", class ...--cancel) was observed in the reset-screen markup but was never clicked, so the return-to-login behaviour is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-028</span> &mdash; NFR-SEC: Session cookie carries the correct security attributes</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> Cookie has HttpOnly=true, Secure=true, SameSite=Lax, path=/web and no Expires (session-scoped); document.cookie returns an empty string</div>
+<div class="row"><b>Actual:</b> Cookie inspection returned httpOnly true, secure true, sameSite Lax, path /web and expires -1 (session-scoped, no Expires), and document.cookie evaluated to an empty string in the page context. All six assertions hold.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.5 cookie dump</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Inspect the "orangehrm" cookie attributes</li><li>Evaluate document.cookie in the page context</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Cookie has HttpOnly=true, Secure=true, SameSite=Lax, path=/web and no Expires (session-scoped); document.cookie returns an empty string</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Cookie inspection returned httpOnly true, secure true, sameSite Lax, path /web and expires -1 (session-scoped, no Expires), and document.cookie evaluated to an empty string in the page context. All six assertions hold.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-030</span> &mdash; NFR-SEC: Security response headers are present on authenticated pages</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> strict-transport-security, x-content-type-options=nosniff and content-security-policy are present. Record the absence of x-frame-options and referrer-policy, and the presence of 'unsafe-inline'/'unsafe-eval' in the CSP, as review findings</div>
+<div class="row"><b>Actual:</b> All three required headers are present: strict-transport-security (max-age=63072000; includeSubdomains;), x-content-type-options nosniff, and content-security-policy. The review findings this case asks to record were captured: x-frame-options and referrer-policy are absent, the CSP includes 'unsafe-inline' and 'unsafe-eval', and the deprecated public-key-pins header is still served.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.5 header table</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Request /web/index.php/admin/viewSystemUsers</li><li>Inspect the response headers</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">strict-transport-security, x-content-type-options=nosniff and content-security-policy are present. Record the absence of x-frame-options and referrer-policy, and the presence of 'unsafe-inline'/'unsafe-eval' in the CSP, as review findings</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">All three required headers are present: strict-transport-security (max-age=63072000; includeSubdomains;), x-content-type-options nosniff, and content-security-policy. The review findings this case asks to record were captured: x-frame-options and referrer-policy are absent, the CSP includes 'unsafe-inline' and 'unsafe-eval', and the deprecated public-key-pins header is still served.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-003</span> &mdash; FR-AUTH-2: Valid credentials authenticate successfully</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Valid Admin account exists (Admin/admin123); no active session</div>
+<div class="row"><b>Expected:</b> User is authenticated and redirected to /web/index.php/dashboard/index; the logged-in user name is displayed in the header user dropdown</div>
+<div class="row"><b>Actual:</b> Observed A3: POST /auth/validate with Admin/admin123 returned 302 and the authenticated area was reached. Deviation D-01 applies only to the deep-link case (a protected URL requested while logged out is preserved as the destination); logging in directly from the login page is unaffected, so the acceptance criterion holds for this test path. The header user-dropdown name was not separately recorded in the exploration evidence.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A3; §6 D-01</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Valid Admin account exists (Admin/admin123); no active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page directly</li><li>Enter username "Admin"</li><li>Enter password "admin123"</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">User is authenticated and redirected to /web/index.php/dashboard/index; the logged-in user name is displayed in the header user dropdown</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Observed A3: POST /auth/validate with Admin/admin123 returned 302 and the authenticated area was reached. Deviation D-01 applies only to the deep-link case (a protected URL requested while logged out is preserved as the destination); logging in directly from the login page is unaffected, so the acceptance criterion holds for this test path. The header user-dropdown name was not separately recorded in the exploration evidence.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-012</span> &mdash; FR-AUTH-4: Whitespace-only input is treated as empty (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> Input is rejected - either "Required" validation fires or the credentials are refused with "Invalid credentials"; the user is never authenticated</div>
+<div class="row"><b>Actual:</b> Not exercised. No whitespace-only probe appears anywhere in the exploration evidence, so whether a single space is treated as empty by the client-side validator or forwarded to /auth/validate is undetermined.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md no evidence in exploration.md</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter a single space in Username</li><li>Enter a single space in Password</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Input is rejected - either "Required" validation fires or the credentials are refused with "Invalid credentials"; the user is never authenticated</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. No whitespace-only probe appears anywhere in the exploration evidence, so whether a single space is treated as empty by the client-side validator or forwarded to /auth/validate is undetermined.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-015</span> &mdash; FR-AUTH-2: Leading and trailing whitespace around a valid username (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Valid Admin account exists</div>
+<div class="row"><b>Expected:</b> Behaviour is deterministic and documented - either the value is trimmed and login succeeds, or it is refused with "Invalid credentials". No server error occurs</div>
+<div class="row"><b>Actual:</b> Not exercised. No probe with surrounding whitespace around a valid username was recorded, so whether the value is trimmed before comparison is undetermined.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md no evidence in exploration.md</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Valid Admin account exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter username as " Admin " with surrounding spaces</li><li>Enter password "admin123"</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Behaviour is deterministic and documented - either the value is trimmed and login succeeds, or it is refused with "Invalid credentials". No server error occurs</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. No probe with surrounding whitespace around a valid username was recorded, so whether the value is trimmed before comparison is undetermined.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-UI-016</span> &mdash; FR-AUTH-4: Very long username is handled without server error (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session</div>
+<div class="row"><b>Expected:</b> The request is refused gracefully with "Invalid credentials"; no HTTP 500, no stack trace, and no truncation error is surfaced to the user</div>
+<div class="row"><b>Actual:</b> Not exercised. No long-input probe was recorded. The 500-character behaviour, and in particular the absence of an HTTP 500 or a surfaced truncation error, is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md no evidence in exploration.md</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the login page</li><li>Enter a 500-character username</li><li>Enter password "admin123"</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The request is refused gracefully with "Invalid credentials"; no HTTP 500, no stack trace, and no truncation error is surfaced to the user</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. No long-input probe was recorded. The 500-character behaviour, and in particular the absence of an HTTP 500 or a surfaced truncation error, is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+</div>
+</details>
+<details class="tc-category" data-cat="auth-api" open>
+<summary><span class="cat-icon">&#128273;</span><span class="cat-name">Authentication — API</span><span class="cat-counts"><span class="cc pass">1 passed</span><span class="cc fail">0 failed</span><span class="cc blocked">0 blocked</span></span><span class="cat-chev"></span></summary>
+<div class="tc-category-body">
+<div class="tc-cat-actions"><button type="button" class="tc-cat-expand">Expand all</button><button type="button" class="tc-cat-collapse">Collapse all</button></div>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-AUTH-API-002</span> &mdash; FR-AUTH-3: Login endpoint refuses invalid credentials</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> No active session; a fresh _token has been obtained</div>
+<div class="row"><b>Expected:</b> Response is 302 with Location /web/index.php/auth/login; no authenticated session is established</div>
+<div class="row"><b>Actual:</b> POST /web/index.php/auth/validate with a valid _token and Admin/wrongpass123 returned 302 with Location /web/index.php/auth/login and no authenticated session. Contract note: this endpoint always answers 302 — success and failure are distinguished only by the Location header, so assertions must read Location, not the status code.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §1.3 A2; §1.3 wire format</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">No active session; a fresh _token has been obtained</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>POST /web/index.php/auth/validate with body _token=&lt;valid&gt;&amp;username=Admin&amp;password=wrongpass123</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Response is 302 with Location /web/index.php/auth/login; no authenticated session is established</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">POST /web/index.php/auth/validate with a valid _token and Admin/wrongpass123 returned 302 with Location /web/index.php/auth/login and no authenticated session. Contract note: this endpoint always answers 302 — success and failure are distinguished only by the Location header, so assertions must read Location, not the status code.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+</div>
+</details>
+<details class="tc-category" data-cat="admin-ui" open>
+<summary><span class="cat-icon">&#128100;</span><span class="cat-name">Admin / User Management — UI</span><span class="cat-counts"><span class="cc pass">11 passed</span><span class="cc fail">1 failed</span><span class="cc blocked">6 blocked</span></span><span class="cat-chev"></span></summary>
+<div class="tc-category-body">
+<div class="tc-cat-actions"><button type="button" class="tc-cat-expand">Expand all</button><button type="button" class="tc-cat-collapse">Collapse all</button></div>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-017</span> &mdash; FR-ADM-2: Password below the minimum length is rejected (boundary, below)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Should have at least 7 characters" is displayed against the Password field</div>
+<div class="row"><b>Actual:</b> "abcde1" (6 characters) returned "Should have at least 7 characters" against the Password field, confirming the below-minimum boundary.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 password policy</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "abcde1" (6 characters) in the Password field</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Should have at least 7 characters" is displayed against the Password field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"abcde1" (6 characters) returned "Should have at least 7 characters" against the Password field, confirming the below-minimum boundary.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-018</span> &mdash; FR-ADM-2: Password at exactly the minimum length is accepted (boundary, at)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> No validation message is displayed against the Password field</div>
+<div class="row"><b>Actual:</b> "abcdef1" (7 characters, containing a digit and lower-case letters) was accepted with no validation message against the Password field, confirming 7 as the inclusive minimum.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 password policy</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "abcdef1" (7 characters, contains a digit and a lower-case letter) in the Password field</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">No validation message is displayed against the Password field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"abcdef1" (7 characters, containing a digit and lower-case letters) was accepted with no validation message against the Password field, confirming 7 as the inclusive minimum.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-021</span> &mdash; FR-ADM-2: All-numeric password is rejected (boundary)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Your password must contain minimum 1 lower-case letter" is displayed against the Password field</div>
+<div class="row"><b>Actual:</b> "1234567" returned "Your password must contain minimum 1 lower-case letter". Length (7) and the digit rule are both satisfied by this input, so the lower-case rule is the one surfaced — matching the expected message exactly.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 password policy</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "1234567" in the Password field</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Your password must contain minimum 1 lower-case letter" is displayed against the Password field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"1234567" returned "Your password must contain minimum 1 lower-case letter". Length (7) and the digit rule are both satisfied by this input, so the lower-case rule is the one surfaced — matching the expected message exactly.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc FAIL">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-013</span> &mdash; FR-ADM-1 / NFR-UX: Confirm Password shows the correct message on an empty form</span><span class="badge FAIL">FAIL</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> Confirm Password displays "Required", consistent with its five sibling fields. KNOWN DEVIATION: the build displays "Passwords do not match" although nothing has been typed - exploration D-03; expected to FAIL</div>
+<div class="row"><b>Actual:</b> On a wholly empty Add User form, Confirm Password displayed "Passwords do not match" while its five sibling fields correctly displayed "Required". Nothing had been typed into either password field, so the message asserts a comparison that never took place. Raised as BUG-02.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge FAIL">FAIL</span></div> <div class="row"><b>Defect:</b> <a href="#BUG-02">BUG-02</a> &mdash; full report in section 3, Defect Reports</div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 validation table; §6 D-03</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Leave every field empty</li><li>Click Save</li><li>Read the message under Confirm Password</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Confirm Password displays "Required", consistent with its five sibling fields. KNOWN DEVIATION: the build displays "Passwords do not match" although nothing has been typed - exploration D-03; expected to FAIL</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">On a wholly empty Add User form, Confirm Password displayed "Passwords do not match" while its five sibling fields correctly displayed "Required". Nothing had been typed into either password field, so the message asserts a comparison that never took place. Raised as BUG-02.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-019</span> &mdash; FR-ADM-2: Password without a digit is rejected</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Your password must contain minimum 1 number" is displayed against the Password field</div>
+<div class="row"><b>Actual:</b> "abcdefgh" (8 characters, lower-case only) returned "Your password must contain minimum 1 number", confirming the digit rule is enforced independently of length.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 password policy</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "abcdefgh" in the Password field</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Your password must contain minimum 1 number" is displayed against the Password field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"abcdefgh" (8 characters, lower-case only) returned "Your password must contain minimum 1 number", confirming the digit rule is enforced independently of length.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-020</span> &mdash; FR-ADM-2: Password without a lower-case letter is rejected</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Your password must contain minimum 1 lower-case letter" is displayed against the Password field</div>
+<div class="row"><b>Actual:</b> "ABCDEFG1" returned "Your password must contain minimum 1 lower-case letter", confirming the lower-case rule is enforced independently of length and of the digit rule.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 password policy</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "ABCDEFG1" in the Password field</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Your password must contain minimum 1 lower-case letter" is displayed against the Password field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"ABCDEFG1" returned "Your password must contain minimum 1 lower-case letter", confirming the lower-case rule is enforced independently of length and of the digit rule.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-022</span> &mdash; FR-ADM-1: Mismatched Confirm Password is rejected</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Passwords do not match" is displayed against the Confirm Password field and the user cannot be saved</div>
+<div class="row"><b>Actual:</b> Not exercised. "Passwords do not match" was observed only on the empty form, which is the D-03 defect. No genuine mismatched pair was typed, so the validator firing correctly on a real mismatch — and the save being prevented as a result — remains unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 (empty-form case only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "qaProbe1" in Password</li><li>Enter "qaProbe2" in Confirm Password</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Passwords do not match" is displayed against the Confirm Password field and the user cannot be saved</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. "Passwords do not match" was observed only on the empty form, which is the D-03 defect. No genuine mismatched pair was typed, so the validator firing correctly on a real mismatch — and the save being prevented as a result — remains unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-025</span> &mdash; FR-ADM-1: Edit User form hides password fields until Change Password is enabled</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; a test user exists</div>
+<div class="row"><b>Expected:</b> Heading reads "Edit User"; Password and Confirm Password are hidden initially and become visible only after the toggle is enabled</div>
+<div class="row"><b>Actual:</b> §2.2 records that in edit mode the heading becomes "Edit User", the form additionally renders a "Change Password ?" toggle, and the Password / Confirm Password fields stay hidden until that toggle is switched on.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.2 edit mode</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; a test user exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Open the Edit User form for the fixture user</li><li>Observe the form</li><li>Toggle "Change Password ?" on</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Heading reads "Edit User"; Password and Confirm Password are hidden initially and become visible only after the toggle is enabled</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">§2.2 records that in edit mode the heading becomes "Edit User", the form additionally renders a "Change Password ?" toggle, and the Password / Confirm Password fields stay hidden until that toggle is switched on.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-026</span> &mdash; FR-ADM-2: Password policy is enforced when changing an existing user's password</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; a test user exists</div>
+<div class="row"><b>Expected:</b> "Should have at least 7 characters" is displayed; the weak password cannot be saved</div>
+<div class="row"><b>Actual:</b> Not exercised. The password policy table in §2.3 was derived entirely from Add-mode probes. No weak password was entered through the Edit User form after enabling "Change Password ?", so policy enforcement on the change-password path is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 (Add mode only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; a test user exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Open the Edit User form</li><li>Enable "Change Password ?"</li><li>Enter "abc" as the new password</li><li>Blur and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Should have at least 7 characters" is displayed; the weak password cannot be saved</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. The password policy table in §2.3 was derived entirely from Add-mode probes. No weak password was entered through the Edit User form after enabling "Change Password ?", so policy enforcement on the change-password path is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-028</span> &mdash; FR-ADM-3: A disabled user cannot authenticate (end to end)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> A test user has been disabled per TC-ADM-UI-027 and its password is known</div>
+<div class="row"><b>Expected:</b> Authentication is refused and the user remains on the login screen; no session is established. Note: the specific message text is assessed separately by TC-AUTH-UI-007 (D-02)</div>
+<div class="row"><b>Actual:</b> The end-to-end chain in §3.7 disabled user id 66 (PUT with status false, HTTP 200), then in an isolated browser context attempted login with the correct password: authentication was refused and no session was established. The functional half of FR-ADM-3 holds. The message text is assessed separately by TC-AUTH-UI-007.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.7 steps 1-2</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">A test user has been disabled per TC-ADM-UI-027 and its password is known</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Open a clean browser context with no existing session</li><li>Navigate to the login page</li><li>Enter the disabled user's username and correct password</li><li>Click Login</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Authentication is refused and the user remains on the login screen; no session is established. Note: the specific message text is assessed separately by TC-AUTH-UI-007 (D-02)</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">The end-to-end chain in §3.7 disabled user id 66 (PUT with status false, HTTP 200), then in an isolated browser context attempted login with the correct password: authentication was refused and no session was established. The functional half of FR-ADM-3 holds. The message text is assessed separately by TC-AUTH-UI-007.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-029</span> &mdash; FR-ADM-3: Re-enabling a disabled user restores the ability to authenticate</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> A disabled test user with a known password exists</div>
+<div class="row"><b>Expected:</b> The user authenticates successfully and reaches the authenticated area</div>
+<div class="row"><b>Actual:</b> Not exercised. The probe account was deleted at the end of the exploration rather than re-enabled, so the disable-then-restore path was never walked and the recovery of authentication is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.6 cleanup note</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">A disabled test user with a known password exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Edit the user and set Status to Enabled</li><li>Save</li><li>In a clean browser context, log in with that user's credentials</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The user authenticates successfully and reaches the authenticated area</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. The probe account was deleted at the end of the exploration rather than re-enabled, so the disable-then-restore path was never walked and the recovery of authentication is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-010</span> &mdash; FR-ADM-1: Add User form renders all required fields</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin</div>
+<div class="row"><b>Expected:</b> The Add User form renders User Role, Employee Name, Status, Username, Password and Confirm Password fields plus Cancel and Save buttons</div>
+<div class="row"><b>Actual:</b> §2.2 enumerates the Add User form as User Role (oxd-select: Admin, ESS), Employee Name (autocomplete), Status (oxd-select: Enabled, Disabled), Username, Password and Confirm Password — all six required fields render. The Save action is evidenced by the empty-form submission in §2.3. The Cancel button was not separately enumerated in the exploration record for this form.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.2 form table; §2.3</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to Admin &gt; User Management &gt; Users</li><li>Click Add</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The Add User form renders User Role, Employee Name, Status, Username, Password and Confirm Password fields plus Cancel and Save buttons</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">§2.2 enumerates the Add User form as User Role (oxd-select: Admin, ESS), Employee Name (autocomplete), Status (oxd-select: Enabled, Disabled), Username, Password and Confirm Password — all six required fields render. The Save action is evidenced by the empty-form submission in §2.3. The Cancel button was not separately enumerated in the exploration record for this form.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-012</span> &mdash; FR-ADM-1: Submitting an empty Add User form surfaces required-field validation</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Required" is displayed against User Role, Employee Name, Status, Username and Password; the user is not created</div>
+<div class="row"><b>Actual:</b> Submitting the Add User form empty produced "Required" against User Role, Employee Name, Status, Username and Password, and no user record was created. Confirm Password reports the wrong message on the same submission; that defect is assessed separately by TC-ADM-UI-013.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 validation table</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Leave every field empty</li><li>Click Save</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Required" is displayed against User Role, Employee Name, Status, Username and Password; the user is not created</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Submitting the Add User form empty produced "Required" against User Role, Employee Name, Status, Username and Password, and no user record was created. Confirm Password reports the wrong message on the same submission; that defect is assessed separately by TC-ADM-UI-013.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-023</span> &mdash; FR-ADM-1: Cancel on the Add User form discards the entry</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> The user is returned to the System Users list and no new user record is created</div>
+<div class="row"><b>Actual:</b> Not exercised. No Cancel action on a populated Add User form was recorded, so neither the return to the System Users list nor the absence of a created record can be asserted.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md no evidence in exploration.md</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Populate every field with valid data</li><li>Click Cancel</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The user is returned to the System Users list and no new user record is created</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. No Cancel action on a populated Add User form was recorded, so neither the return to the System Users list nor the absence of a created record can be asserted.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-009</span> &mdash; FR-ADM-1: Filter combination returning no matches shows an empty state (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the System Users list</div>
+<div class="row"><b>Expected:</b> "(0) Records Found" is displayed along with a No Records Found empty state; no rows are rendered and no error occurs</div>
+<div class="row"><b>Actual:</b> Not exercised at the UI layer. The API equivalent GET /admin/users?status=false did return {"data":[],"meta":{"total":0}}, but the System Users list was never filtered into a zero-result state in the browser, so "(0) Records Found" and the No Records Found empty state are unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 (API equivalent only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the System Users list</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Expand the filter panel</li><li>Enter a username that cannot exist, e.g. "ZZZnoMatch9901"</li><li>Click Search</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"(0) Records Found" is displayed along with a No Records Found empty state; no rows are rendered and no error occurs</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised at the UI layer. The API equivalent GET /admin/users?status=false did return {"data":[],"meta":{"total":0}}, but the System Users list was never filtered into a zero-result state in the browser, so "(0) Records Found" and the No Records Found empty state are unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-014</span> &mdash; FR-ADM-2: Username shorter than the minimum is rejected (boundary, below)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form</div>
+<div class="row"><b>Expected:</b> "Should be at least 5 characters" is displayed against the Username field</div>
+<div class="row"><b>Actual:</b> The below-minimum username rule is confirmed: the exploration probed "ab" (2 characters) and the form returned "Should be at least 5 characters". The specific 4-character input named by this case was not the probe used, but it falls in the same below-minimum class and the expected message text matches the observed text exactly.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 username rules</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "abcd" (4 characters) in Username</li><li>Blur the field and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">"Should be at least 5 characters" is displayed against the Username field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">The below-minimum username rule is confirmed: the exploration probed "ab" (2 characters) and the form returned "Should be at least 5 characters". The specific 4-character input named by this case was not the probe used, but it falls in the same below-minimum class and the expected message text matches the observed text exactly.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-015</span> &mdash; FR-ADM-2: Username at exactly the minimum length is accepted (boundary, at)</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; on the Add User form; username "abcde" is unused</div>
+<div class="row"><b>Expected:</b> No length validation message is displayed against the Username field</div>
+<div class="row"><b>Actual:</b> "abcde" (5 characters) was accepted with no length validation message, confirming 5 as the inclusive minimum. The async uniqueness check (GET /admin/validation/user-name) fires independently and did not report a conflict for this value.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §2.3 username rules</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; on the Add User form; username "abcde" is unused</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Enter "abcde" (5 characters) in Username</li><li>Blur the field and wait for validation to settle</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">No length validation message is displayed against the Username field</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"abcde" (5 characters) was accepted with no length validation message, confirming 5 as the inclusive minimum. The async uniqueness check (GET /admin/validation/user-name) fires independently and did not report a conflict for this value.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-UI-032</span> &mdash; FR-ADM-1: User list pagination beyond the default page size (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated as Admin; more than 50 user records exist</div>
+<div class="row"><b>Expected:</b> Page 1 renders at most 50 rows; the pagination control is present and page 2 renders the subsequent records without duplication</div>
+<div class="row"><b>Actual:</b> Pre-condition cannot be met on the build under test. The instance holds 11-12 user records (meta.total 11, rising to 12 mid-session per D-10), far below the 50-row default page size, so a second page is never rendered and the pagination control cannot be exercised.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 meta.total; §6 D-10</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated as Admin; more than 50 user records exist</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Navigate to the System Users list</li><li>Observe the pagination control</li><li>Navigate to page 2</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Page 1 renders at most 50 rows; the pagination control is present and page 2 renders the subsequent records without duplication</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Pre-condition cannot be met on the build under test. The instance holds 11-12 user records (meta.total 11, rising to 12 mid-session per D-10), far below the 50-row default page size, so a second page is never rendered and the pagination control cannot be exercised.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+</div>
+</details>
+<details class="tc-category" data-cat="admin-api" open>
+<summary><span class="cat-icon">&#128268;</span><span class="cat-name">Admin / User Management — API</span><span class="cat-counts"><span class="cc pass">9 passed</span><span class="cc fail">1 failed</span><span class="cc blocked">5 blocked</span></span><span class="cat-chev"></span></summary>
+<div class="tc-category-body">
+<div class="tc-cat-actions"><button type="button" class="tc-cat-expand">Expand all</button><button type="button" class="tc-cat-collapse">Collapse all</button></div>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-018</span> &mdash; FR-ADM-2: API enforces the password policy independently of the UI</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> HTTP 422 with invalidParamKeys containing "password" - the policy is enforced server-side and cannot be bypassed by skipping the browser</div>
+<div class="row"><b>Actual:</b> POST /api/v2/admin/users with "password":"abc" returned HTTP 422 with invalidParamKeys ["password"]. Two further negative payloads confirm independent server-side enforcement: a duplicate username returned 422 naming username, and a payload carrying only username returned 422 naming password, userRoleId, empNumber and status. The policy cannot be bypassed by calling the API directly.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.6 create validation table</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>POST /api/v2/admin/users with body {"username":"qaapi0002","password":"abc","status":true,"userRoleId":2,"empNumber":3}</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 422 with invalidParamKeys containing "password" - the policy is enforced server-side and cannot be bypassed by skipping the browser</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">POST /api/v2/admin/users with "password":"abc" returned HTTP 422 with invalidParamKeys ["password"]. Two further negative payloads confirm independent server-side enforcement: a duplicate username returned 422 naming username, and a payload carrying only username returned 422 naming password, userRoleId, empNumber and status. The policy cannot be bypassed by calling the API directly.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-023</span> &mdash; FR-API-10: Update rejects a payload omitting the password key</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin; a fixture user exists</div>
+<div class="row"><b>Expected:</b> HTTP 422 with invalidParamKeys containing "password". Documents the API wart in exploration D-06: password is mandatory even when no password change is requested</div>
+<div class="row"><b>Actual:</b> PUT /api/v2/admin/users/{id} with the password key entirely omitted returned HTTP 422 with invalidParamKeys ["password"], even though changePassword was false. The case passes as written. The underlying API design wart — a mandatory but ignored field — stands as D-06 and is a design follow-up rather than an execution failure.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.6 update; §6 D-06</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin; a fixture user exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>PUT /api/v2/admin/users/{id} with changePassword false and the password key entirely omitted</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 422 with invalidParamKeys containing "password". Documents the API wart in exploration D-06: password is mandatory even when no password change is requested</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">PUT /api/v2/admin/users/{id} with the password key entirely omitted returned HTTP 422 with invalidParamKeys ["password"], even though changePassword was false. The case passes as written. The underlying API design wart — a mandatory but ignored field — stands as D-06 and is a design follow-up rather than an execution failure.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-024</span> &mdash; FR-API-10: Update rejects a null password where an empty string is accepted</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin; a fixture user exists</div>
+<div class="row"><b>Expected:</b> The null payload returns HTTP 422 naming "password"; the empty-string payload returns HTTP 200 - confirming only "" is accepted, per exploration D-06</div>
+<div class="row"><b>Actual:</b> "password":null was rejected with HTTP 422 naming password, while the same request with "password":"" returned HTTP 200 and applied the update (data.status flipped to false). Only the empty string is accepted — exactly the asymmetry D-06 describes, and the workaround the UI itself sends.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.6 update; §6 D-06</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin; a fixture user exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>PUT /api/v2/admin/users/{id} with "password":null and changePassword false</li><li>Repeat the same request with "password":""</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">The null payload returns HTTP 422 naming "password"; the empty-string payload returns HTTP 200 - confirming only "" is accepted, per exploration D-06</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">"password":null was rejected with HTTP 422 naming password, while the same request with "password":"" returned HTTP 200 and applied the update (data.status flipped to false). Only the empty string is accepted — exactly the asymmetry D-06 describes, and the workaround the UI itself sends.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-004</span> &mdash; FR-API-5: limit and offset paginate correctly without overlap</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin; at least 4 users exist</div>
+<div class="row"><b>Expected:</b> Both calls return HTTP 200 with 2 records each; the two id sets are disjoint - no record is repeated across pages</div>
+<div class="row"><b>Actual:</b> Partially exercised. The first page (limit=2&amp;offset=0) was captured and returned 2 records with meta.total unchanged, but no second-page call (limit=2&amp;offset=2) was recorded. The disjointness of the two id sets — the substance of this case — cannot be evaluated from the available evidence.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 (first page only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin; at least 4 users exist</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=2&amp;offset=0 and record the ids</li><li>GET /api/v2/admin/users?limit=2&amp;offset=2 and record the ids</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Both calls return HTTP 200 with 2 records each; the two id sets are disjoint - no record is repeated across pages</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Partially exercised. The first page (limit=2&amp;offset=0) was captured and returned 2 records with meta.total unchanged, but no second-page call (limit=2&amp;offset=2) was recorded. The disjointness of the two id sets — the substance of this case — cannot be evaluated from the available evidence.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-010</span> &mdash; FR-API-5: offset beyond the total returns an empty page (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> HTTP 200 with data as an empty array; meta.total still reports the true unfiltered total; no error is raised</div>
+<div class="row"><b>Actual:</b> Not exercised. No out-of-range offset probe was recorded, so the empty-page response, the preservation of the true meta.total and the absence of an error are all unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md no evidence in exploration.md</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=50&amp;offset=99999</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 200 with data as an empty array; meta.total still reports the true unfiltered total; no error is raised</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. No out-of-range offset probe was recorded, so the empty-page response, the preservation of the true meta.total and the absence of an error are all unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-011</span> &mdash; FR-API-5 / FR-API-7: Invalid limit value is rejected or safely defaulted (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> Each call either returns HTTP 422 naming "limit" in invalidParamKeys or returns HTTP 200 with a safe default page size; no HTTP 500 occurs</div>
+<div class="row"><b>Actual:</b> Not exercised. Neither limit=-1 nor limit=0 was submitted, so the rejection-or-safe-default behaviour, and in particular the absence of an HTTP 500, remain unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md no evidence in exploration.md</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=-1&amp;offset=0</li><li>GET /api/v2/admin/users?limit=0&amp;offset=0</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Each call either returns HTTP 422 naming "limit" in invalidParamKeys or returns HTTP 200 with a safe default page size; no HTTP 500 occurs</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Not exercised. Neither limit=-1 nor limit=0 was submitted, so the rejection-or-safe-default behaviour, and in particular the absence of an HTTP 500, remain unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-030</span> &mdash; FR-API-10: Delete accepts multiple ids in a single request (boundary)</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin; two disposable fixture users exist</div>
+<div class="row"><b>Expected:</b> HTTP 200; both ids are echoed in the data array and both records are confirmed removed by a follow-up list call</div>
+<div class="row"><b>Actual:</b> Partially exercised. DELETE /api/v2/admin/users was confirmed to take ids in the request body against the collection URL, returning HTTP 200 {"data":["66"],"meta":[],"rels":[]} — note the id echoes back as a string — and a follow-up GET /admin/users/66 returned 404, confirming removal. However only a single id was ever sent, so the multiple-ids boundary of this case is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.6 delete (single id only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin; two disposable fixture users exist</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>DELETE /api/v2/admin/users with body {"ids":[&lt;id1&gt;,&lt;id2&gt;]}</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 200; both ids are echoed in the data array and both records are confirmed removed by a follow-up list call</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Partially exercised. DELETE /api/v2/admin/users was confirmed to take ids in the request body against the collection URL, returning HTTP 200 {"data":["66"],"meta":[],"rels":[]} — note the id echoes back as a string — and a follow-up GET /admin/users/66 returned 404, confirming removal. However only a single id was ever sent, so the multiple-ids boundary of this case is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-001</span> &mdash; FR-API-1 / FR-API-3: List users returns the standard response envelope</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> HTTP 200 with a JSON body containing exactly the keys data, meta and rels; data is an array of user objects</div>
+<div class="row"><b>Actual:</b> GET /api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=u.userName&amp;sortOrder=ASC returned HTTP 200 with exactly the keys data, meta and rels. data was an array of user objects, meta carried {"total": 11} and rels was an empty array.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 list response</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /web/index.php/api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=u.userName&amp;sortOrder=ASC</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 200 with a JSON body containing exactly the keys data, meta and rels; data is an array of user objects</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">GET /api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=u.userName&amp;sortOrder=ASC returned HTTP 200 with exactly the keys data, meta and rels. data was an array of user objects, meta carried {"total": 11} and rels was an empty array.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-002</span> &mdash; FR-API-3: User object conforms to the documented schema</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> Each user object contains id, userName, deleted, status, an employee object (empNumber, employeeId, firstName, middleName, lastName, terminationId) and a userRole object (id, name, displayName)</div>
+<div class="row"><b>Actual:</b> Each captured user object carries id, userName, deleted and status, a nested employee object with empNumber, employeeId, firstName, middleName, lastName and terminationId, and a userRole object with id, name and displayName. Role ids are stable and usable as test constants: 1 = Admin, 2 = ESS.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 captured records</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=1</li><li>Inspect the first element of data</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Each user object contains id, userName, deleted, status, an employee object (empNumber, employeeId, firstName, middleName, lastName, terminationId) and a userRole object (id, name, displayName)</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Each captured user object carries id, userName, deleted and status, a nested employee object with empNumber, employeeId, firstName, middleName, lastName and terminationId, and a userRole object with id, name and displayName. Role ids are stable and usable as test constants: 1 = Admin, 2 = ESS.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-003</span> &mdash; FR-API-4: meta.total reports the unfiltered total independent of page size</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin; at least 3 users exist</div>
+<div class="row"><b>Expected:</b> data contains exactly 2 records while meta.total reports the full unfiltered user count</div>
+<div class="row"><b>Actual:</b> GET /api/v2/admin/users?limit=2&amp;offset=0 returned exactly 2 records while meta.total remained 11, confirming meta.total reports the unfiltered total and is independent of the page size.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 query parameter table</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin; at least 3 users exist</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=2&amp;offset=0</li><li>Compare the length of data against meta.total</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">data contains exactly 2 records while meta.total reports the full unfiltered user count</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">GET /api/v2/admin/users?limit=2&amp;offset=0 returned exactly 2 records while meta.total remained 11, confirming meta.total reports the unfiltered total and is independent of the page size.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc BLOCKED">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-005</span> &mdash; FR-API-5: sortField and sortOrder order the result set</span><span class="badge BLOCKED">BLOCKED</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> Both return HTTP 200; the ASC result is ordered by userName ascending and the DESC result is its reverse. Note the "u." table-alias prefix required by this resource</div>
+<div class="row"><b>Actual:</b> Partially exercised. The ASC call with the required "u." table-alias prefix (sortField=u.userName&amp;sortOrder=ASC) was verified as the call the UI itself issues, but no sortOrder=DESC call was recorded, so the reverse-ordering half of the assertion is unverified.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge BLOCKED">BLOCKED</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.1 (ASC only)</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=50&amp;sortField=u.userName&amp;sortOrder=ASC</li><li>GET the same with sortOrder=DESC</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">Both return HTTP 200; the ASC result is ordered by userName ascending and the DESC result is its reverse. Note the "u." table-alias prefix required by this resource</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">Partially exercised. The ASC call with the required "u." table-alias prefix (sortField=u.userName&amp;sortOrder=ASC) was verified as the call the UI itself issues, but no sortOrder=DESC call was recorded, so the reverse-ordering half of the assertion is unverified.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-006</span> &mdash; FR-API-5 / FR-API-7: Invalid sortField is rejected naming the offending key</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> HTTP 422 with body {"error":{"status":"422","message":"Invalid Parameter","data":{"invalidParamKeys":["sortField"]}}}</div>
+<div class="row"><b>Actual:</b> GET /api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=bogusField&amp;sortOrder=ASC returned HTTP 422 with body {"error":{"status":"422","message":"Invalid Parameter","data":{"invalidParamKeys":["sortField"]}}} — matching the expected contract exactly, including the offending key being named.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.3 error contracts</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=bogusField&amp;sortOrder=ASC</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 422 with body {"error":{"status":"422","message":"Invalid Parameter","data":{"invalidParamKeys":["sortField"]}}}</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">GET /api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=bogusField&amp;sortOrder=ASC returned HTTP 422 with body {"error":{"status":"422","message":"Invalid Parameter","data":{"invalidParamKeys":["sortField"]}}} — matching the expected contract exactly, including the offending key being named.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-012</span> &mdash; FR-API-1: Retrieve a single user by id</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin; user id 1 exists</div>
+<div class="row"><b>Expected:</b> HTTP 200; data is a single user object (not an array); note that meta is returned as an empty array [] rather than an object on this endpoint</div>
+<div class="row"><b>Actual:</b> GET /web/index.php/api/v2/admin/users/1 returned HTTP 200 with data as a single user object rather than an array. The documented quirk is confirmed: meta comes back as an empty array [] on this endpoint, where the collection endpoint returns it as an object.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.2 single record</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin; user id 1 exists</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /web/index.php/api/v2/admin/users/1</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 200; data is a single user object (not an array); note that meta is returned as an empty array [] rather than an object on this endpoint</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">GET /web/index.php/api/v2/admin/users/1 returned HTTP 200 with data as a single user object rather than an array. The documented quirk is confirmed: meta comes back as an empty array [] on this endpoint, where the collection endpoint returns it as an object.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc PASS">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-013</span> &mdash; FR-API-6: Retrieving a non-existent user id returns a structured error</span><span class="badge PASS">PASS</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> HTTP 404 with body {"error":{"status":"404","message":"Record Not Found"}}. NOTE: PRD FR-API-6 documents 422 "Invalid Parameter" for the PIM equivalent - error semantics differ per resource, exploration D-05</div>
+<div class="row"><b>Actual:</b> GET /web/index.php/api/v2/admin/users/999999 returned HTTP 404 with body {"error":{"status":"404","message":"Record Not Found"}}, exactly as expected. This also confirms the per-resource divergence recorded as D-05: the PRD documents 422 Invalid Parameter for the PIM equivalent, so FR-API-6 cannot be asserted uniformly across resources — a PRD amendment, not a defect.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge PASS">PASS</span></div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.3; §6 D-05</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>GET /web/index.php/api/v2/admin/users/999999</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">HTTP 404 with body {"error":{"status":"404","message":"Record Not Found"}}. NOTE: PRD FR-API-6 documents 422 "Invalid Parameter" for the PIM equivalent - error semantics differ per resource, exploration D-05</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">GET /web/index.php/api/v2/admin/users/999999 returned HTTP 404 with body {"error":{"status":"404","message":"Record Not Found"}}, exactly as expected. This also confirms the per-resource divergence recorded as D-05: the PRD documents 422 Invalid Parameter for the PIM equivalent, so FR-API-6 cannot be asserted uniformly across resources — a PRD amendment, not a defect.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+<details class="tc FAIL">
+<summary class="tc-head"><span><span class="chev"></span><span class="mono">TC-ADM-API-014</span> &mdash; FR-API-6: error.status data type is consistent across error responses</span><span class="badge FAIL">FAIL</span></summary>
+<div class="row"><b>Pre-conditions:</b> Authenticated session as Admin</div>
+<div class="row"><b>Expected:</b> error.status uses a single consistent JSON type across all error responses. KNOWN DEVIATION: it is a string in 404/422 bodies but an integer in 401 bodies - exploration D-05; expected to FAIL</div>
+<div class="row"><b>Actual:</b> error.status is not a single consistent JSON type. The 404 body carries "status":"404" and the 422 body "status":"422" (both strings), while the 401 body carries "status":401 (an integer). A strict schema assertion passes against one pair and fails against the other. Raised as BUG-03.</div>
+<div class="tc-status-row row"><b>Status:</b> <span class="badge FAIL">FAIL</span></div> <div class="row"><b>Defect:</b> <a href="#BUG-03">BUG-03</a> &mdash; full report in section 3, Defect Reports</div>
+<details class="evidence"><summary>Evidence</summary><div class="ev-body">exploration.md §3.3; §6 D-05</div></details>
+<div class="view-tc-wrap"><details class="view-tc"><summary>View Test Case</summary><div class="view-tc-body">
+<div class="vtc-h">Pre-conditions</div><div class="vtc-p">Authenticated session as Admin</div>
+<div class="vtc-h">Steps</div><ol class="vtc-steps"><li>Capture the 404 body from TC-ADM-API-013</li><li>Capture the 422 body from TC-ADM-API-006</li><li>Capture the 401 body from TC-AUTH-API-004</li><li>Compare the type of error.status</li></ol>
+<div class="vtc-h">Expected Result</div><div class="vtc-p">error.status uses a single consistent JSON type across all error responses. KNOWN DEVIATION: it is a string in 404/422 bodies but an integer in 401 bodies - exploration D-05; expected to FAIL</div>
+<div class="vtc-h">Actual Result</div><div class="vtc-p">error.status is not a single consistent JSON type. The 404 body carries "status":"404" and the 422 body "status":"422" (both strings), while the 401 body carries "status":401 (an integer). A strict schema assertion passes against one pair and fails against the other. Raised as BUG-03.</div>
+<div class="vtc-h">Needs Automation</div><div class="vtc-p">Yes</div>
+</div></details></div>
+</details>
+</div>
+</details>
+</details>
+
+<details class="section-collapse" open> <summary class="section-summary-flex">3. Defect Reports<span class="section-count-badge"><span class="scb-val serious">3</span><span class="scb-lbl">Defects</span></span></summary>
+<div class="cleanup">One defect was raised for each of the 3 failing test cases. The full reports are below, and the same reports are also saved separately, with identical IDs and content, in <span class="mono">Defect_Reports_2026-10-13.md</span> (same folder).</div>
+<div class="finding defect" id="BUG-01"><div class="kind">Defect &mdash; BUG-01</div>
+<div class="mono" style="margin:4px 0 6px;"><b>[/web/index.php/auth/validate][Disabled account returns "Account disabled" instead of the generic "Invalid credentials", disclosing account state and password correctness]</b></div>
+<div class="mono" style="margin-bottom:6px;">Severity: Medium–High · Traceability: TC-AUTH-UI-007 · FR-AUTH-3, NFR-SEC · exploration D-02 (§1.3 A5, §3.7)</div>
+<div class="vtc-h">Description</div>
+<div class="vtc-p" style="margin-bottom:6px">The login endpoint produces two distinguishable rejection messages. A <b>disabled</b> account submitted with its <b>correct</b> password is refused with the banner <code>Account disabled</code>, while the same account submitted with a wrong password is refused with <code>Invalid credentials</code>. The difference turns the login form into an oracle: an unauthenticated attacker can confirm both that a given username exists and that a guessed password is correct, even though the account cannot be used to sign in. This contradicts the FR-AUTH-3 acceptance criterion that authentication is refused "without disclosing which field was wrong", and it defeats the purpose of the generic-message design applied everywhere else on the screen.</div>
+<div class="vtc-h">Steps to reproduce</div>
+<ol class="vtc-steps"><li>Sign in as <code>Admin</code> / <code>admin123</code> and create a test user — <code>POST /web/index.php/api/v2/admin/users</code> with body <code>{"username":"qaprobe9901","password":"qaProbe1","status":true,"userRoleId":2,"empNumber":3}</code> (or Admin &gt; User Management &gt; Users &gt; Add).</li><li>Disable that user — <code>PUT /web/index.php/api/v2/admin/users/{id}</code> with body <code>{"username":"qaprobe9901","password":"","status":false,"userRoleId":2,"empNumber":3,"changePassword":false}</code> (or set Status to <code>Disabled</code> on the Edit User form).</li><li>Open a clean browser context with no existing session and navigate to <code>/web/index.php/auth/login</code>.</li><li>Enter username <code>qaprobe9901</code> and the <b>correct</b> password <code>qaProbe1</code>, then click <b>Login</b>. Record the text of the <code>.oxd-alert.oxd-alert--error</code> banner.</li><li>Repeat steps 3–4 with an <b>incorrect</b> password, for example <code>totallyWrong1</code>. Record the banner text again.</li><li>Compare the two recorded banner texts.</li></ol>
+<div class="vtc-h">Expected Result</div>
+<div class="vtc-p" style="margin-bottom:6px">Both attempts are refused with the identical generic banner <code>Invalid credentials</code>, and the response is indistinguishable in message, status code and <code>Location</code> header. Nothing in the response reveals whether the username exists, whether the account is disabled, or whether the submitted password was correct.</div>
+<div class="vtc-h">Actual result</div>
+<div class="vtc-p" style="margin-bottom:6px">The two attempts are distinguishable. Step 4 (correct password, disabled account) returns the banner <code>Account disabled</code>. Step 5 (wrong password, same account) returns <code>Invalid credentials</code>. The disabled account is therefore confirmed to exist, and the correct password is confirmed to be correct, from the login screen alone with no authenticated session. The functional half of the control works correctly — the disabled user genuinely cannot sign in — but the messaging leaks account state.</div>
+</div>
+<div class="finding defect" id="BUG-02"><div class="kind">Defect &mdash; BUG-02</div>
+<div class="mono" style="margin:4px 0 6px;"><b>[/web/index.php/admin/saveSystemUser][Confirm Password reports "Passwords do not match" on an empty Add User form instead of "Required"]</b></div>
+<div class="mono" style="margin-bottom:6px;">Severity: Low–Medium · Traceability: TC-ADM-UI-013 · FR-ADM-1, NFR-UX · exploration D-03 (§2.3)</div>
+<div class="vtc-h">Description</div>
+<div class="vtc-p" style="margin-bottom:6px">Submitting a completely empty Add User form surfaces required-field validation on every control, but the <code>Confirm Password</code> field reports the wrong rule. Its five sibling fields — User Role, Employee Name, Status, Username and Password — all correctly display <code>Required</code>, while Confirm Password displays <code>Passwords do not match</code>. Nothing has been typed into either password field at that point, so the message states a comparison failure that did not occur. It misdirects the user toward re-checking a value they never entered, and it breaks the consistency of the form's own validation vocabulary.</div>
+<div class="vtc-h">Steps to reproduce</div>
+<ol class="vtc-steps"><li>Sign in as <code>Admin</code> / <code>admin123</code>.</li><li>Navigate to <b>Admin &gt; User Management &gt; Users</b> and click <b>Add</b>.</li><li>Leave every field on the Add User form empty — do not type into Password or Confirm Password.</li><li>Click <b>Save</b>.</li><li>Read the message rendered in <code>.oxd-input-field-error-message</code> beneath each of the six fields.</li></ol>
+<div class="vtc-h">Expected Result</div>
+<div class="vtc-p" style="margin-bottom:6px">Confirm Password displays <code>Required</code>, consistent with the five sibling fields on the same form, since the field is empty and no comparison is possible. The user is not created.</div>
+<div class="vtc-h">Actual result</div>
+<div class="vtc-p" style="margin-bottom:6px">Confirm Password displays <code>Passwords do not match</code>. The other five fields correctly display <code>Required</code>. The user is correctly not created, so the defect is confined to the message text, but the field reports a mismatch between two values that were never supplied.</div>
+</div>
+<div class="finding defect" id="BUG-03"><div class="kind">Defect &mdash; BUG-03</div>
+<div class="mono" style="margin:4px 0 6px;"><b>[/web/index.php/api/v2/admin/users][error.status is a string in 404 and 422 bodies but an integer in 401 bodies]</b></div>
+<div class="mono" style="margin-bottom:6px;">Severity: Low · Traceability: TC-ADM-API-014 · FR-API-6, FR-API-7 · exploration D-05 (§3.3)</div>
+<div class="vtc-h">Description</div>
+<div class="vtc-p" style="margin-bottom:6px">The API error envelope is structurally consistent — every error response carries <code>error.status</code> and <code>error.message</code> — but the JSON data type of <code>error.status</code> changes with the status class. The <code>404</code> and <code>422</code> bodies quote it as a string (<code>"404"</code>, <code>"422"</code>), while the <code>401</code> body returns it as a bare integer (<code>401</code>). A client or test suite that deserialises the error envelope into a typed model, or that asserts the error schema strictly, will succeed against one class of error and fail against the other. Integrators are forced to write a type-tolerant parser for a field that should be a single type across the contract.</div>
+<div class="vtc-h">Steps to reproduce</div>
+<ol class="vtc-steps"><li>Sign in as <code>Admin</code> / <code>admin123</code> so the <code>orangehrm</code> session cookie is held.</li><li>Request a non-existent record — <code>GET /web/index.php/api/v2/admin/users/999999</code> — and record the raw response body.</li><li>Request an invalid parameter — <code>GET /web/index.php/api/v2/admin/users?limit=50&amp;offset=0&amp;sortField=bogusField&amp;sortOrder=ASC</code> — and record the raw response body.</li><li>Sign out via <code>/web/index.php/auth/logout</code>, then replay any <code>GET /web/index.php/api/v2/admin/users</code> call with the now-invalid cookie and record the raw response body.</li><li>Compare the JSON type of <code>error.status</code> across the three bodies.</li></ol>
+<div class="vtc-h">Expected Result</div>
+<div class="vtc-p" style="margin-bottom:6px"><code>error.status</code> uses one consistent JSON type in every error response, so a single strict schema — and a single deserialisation model — validates all of them.</div>
+<div class="vtc-h">Actual result</div>
+<div class="vtc-p" style="margin-bottom:6px">The type changes with the status class:</div>
+<ul class="vtc-steps"><li><code>404</code> → <code>{"error":{"status":"404","message":"Record Not Found"}}</code> — string</li><li><code>422</code> → <code>{"error":{"status":"422","message":"Invalid Parameter","data":{"invalidParamKeys":["sortField"]}}}</code> — string</li><li><code>401</code> → <code>{"error":{"status":401,"message":"Session expired"}}</code> — integer</li></ul>
+<div class="vtc-p" style="margin-bottom:6px">A strict schema assertion passes against the 404/422 pair and fails against the 401, or the reverse.</div>
+</div>
+</details>
+
+<details class="section-collapse" open>
+<summary class="section-summary-flex">4. Blocked &mdash; re-run backlog<span class="section-count-badge"><span class="scb-val accent">19</span><span class="scb-lbl">Blocked</span></span></summary>
+<div style="font-size:13px; color:var(--ink-2);">
+<p style="margin-top:0;">These cases were not evaluated because the exploration evidence does not cover the behaviour they assert. None of them is a pass and none is a defect &mdash; each needs a live run.</p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-API-004</b> &mdash; FR-API-5: limit and offset paginate correctly without overlap<br><span style="color:var(--ink-muted);">Partially exercised. The first page (limit=2&amp;offset=0) was captured and returned 2 records with meta.total unchanged, but no second-page call (limit=2&amp;offset=2) was recorded. The disjointness of the two id sets — the substance of this case — cannot be evaluated from the available evidence.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-API-010</b> &mdash; FR-API-5: offset beyond the total returns an empty page (boundary)<br><span style="color:var(--ink-muted);">Not exercised. No out-of-range offset probe was recorded, so the empty-page response, the preservation of the true meta.total and the absence of an error are all unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-API-011</b> &mdash; FR-API-5 / FR-API-7: Invalid limit value is rejected or safely defaulted (boundary)<br><span style="color:var(--ink-muted);">Not exercised. Neither limit=-1 nor limit=0 was submitted, so the rejection-or-safe-default behaviour, and in particular the absence of an HTTP 500, remain unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-API-030</b> &mdash; FR-API-10: Delete accepts multiple ids in a single request (boundary)<br><span style="color:var(--ink-muted);">Partially exercised. DELETE /api/v2/admin/users was confirmed to take ids in the request body against the collection URL, returning HTTP 200 {"data":["66"],"meta":[],"rels":[]} — note the id echoes back as a string — and a follow-up GET /admin/users/66 returned 404, confirming removal. However only a single id was ever sent, so the multiple-ids boundary of this case is unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-UI-022</b> &mdash; FR-ADM-1: Mismatched Confirm Password is rejected<br><span style="color:var(--ink-muted);">Not exercised. "Passwords do not match" was observed only on the empty form, which is the D-03 defect. No genuine mismatched pair was typed, so the validator firing correctly on a real mismatch — and the save being prevented as a result — remains unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-UI-026</b> &mdash; FR-ADM-2: Password policy is enforced when changing an existing user's password<br><span style="color:var(--ink-muted);">Not exercised. The password policy table in §2.3 was derived entirely from Add-mode probes. No weak password was entered through the Edit User form after enabling "Change Password ?", so policy enforcement on the change-password path is unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-UI-029</b> &mdash; FR-ADM-3: Re-enabling a disabled user restores the ability to authenticate<br><span style="color:var(--ink-muted);">Not exercised. The probe account was deleted at the end of the exploration rather than re-enabled, so the disable-then-restore path was never walked and the recovery of authentication is unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-010</b> &mdash; FR-AUTH-4: Username empty with password supplied<br><span style="color:var(--ink-muted);">Not exercised. The exploration recorded only the both-fields-empty case (A1: no network request fires and "Required" renders under both fields). The single-field variant with a password supplied was never submitted, so neither the field-scoped message nor the absence of a /auth/validate request can be asserted from the available evidence.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-011</b> &mdash; FR-AUTH-4: Password empty with username supplied<br><span style="color:var(--ink-muted);">Not exercised. As with TC-AUTH-UI-010, only the both-fields-empty case was recorded. The variant with a username supplied and the password left empty was never submitted, so the Password-scoped "Required" message is unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-014</b> &mdash; FR-AUTH-2: Password is case-sensitive (negative)<br><span style="color:var(--ink-muted);">Not exercised. A2 covers an arbitrary wrong password ("wrongpass123") but no case-variant of the correct password ("ADMIN123") was ever submitted, so password case sensitivity remains unproven.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-020</b> &mdash; FR-AUTH-5: Reset Password screen accepts a username and submits<br><span style="color:var(--ink-muted);">Not exercised. §5 records POST /web/index.php/auth/requestResetPassword as "Form captured, not submitted" — the form action, the hidden _token and the Username field are known, but no submission was made and no confirmation screen was observed.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-021</b> &mdash; FR-AUTH-5: Reset Password Cancel returns to the login screen<br><span style="color:var(--ink-muted);">Not exercised. The Cancel button (type="button", class ...--cancel) was observed in the reset-screen markup but was never clicked, so the return-to-login behaviour is unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-UI-023</b> &mdash; FR-ADM-1: Cancel on the Add User form discards the entry<br><span style="color:var(--ink-muted);">Not exercised. No Cancel action on a populated Add User form was recorded, so neither the return to the System Users list nor the absence of a created record can be asserted.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-UI-009</b> &mdash; FR-ADM-1: Filter combination returning no matches shows an empty state (boundary)<br><span style="color:var(--ink-muted);">Not exercised at the UI layer. The API equivalent GET /admin/users?status=false did return {"data":[],"meta":{"total":0}}, but the System Users list was never filtered into a zero-result state in the browser, so "(0) Records Found" and the No Records Found empty state are unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-UI-032</b> &mdash; FR-ADM-1: User list pagination beyond the default page size (boundary)<br><span style="color:var(--ink-muted);">Pre-condition cannot be met on the build under test. The instance holds 11-12 user records (meta.total 11, rising to 12 mid-session per D-10), far below the 50-row default page size, so a second page is never rendered and the pagination control cannot be exercised.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-012</b> &mdash; FR-AUTH-4: Whitespace-only input is treated as empty (boundary)<br><span style="color:var(--ink-muted);">Not exercised. No whitespace-only probe appears anywhere in the exploration evidence, so whether a single space is treated as empty by the client-side validator or forwarded to /auth/validate is undetermined.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-015</b> &mdash; FR-AUTH-2: Leading and trailing whitespace around a valid username (boundary)<br><span style="color:var(--ink-muted);">Not exercised. No probe with surrounding whitespace around a valid username was recorded, so whether the value is trimmed before comparison is undetermined.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-AUTH-UI-016</b> &mdash; FR-AUTH-4: Very long username is handled without server error (boundary)<br><span style="color:var(--ink-muted);">Not exercised. No long-input probe was recorded. The 500-character behaviour, and in particular the absence of an HTTP 500 or a surfaced truncation error, is unverified.</span></p>
+<p style="margin:0 0 6px;"><b class="mono">TC-ADM-API-005</b> &mdash; FR-API-5: sortField and sortOrder order the result set<br><span style="color:var(--ink-muted);">Partially exercised. The ASC call with the required "u." table-alias prefix (sortField=u.userName&amp;sortOrder=ASC) was verified as the call the UI itself issues, but no sortOrder=DESC call was recorded, so the reverse-ordering half of the assertion is unverified.</span></p>
+</div>
+</details>
+
+<details class="section-collapse" open>
+<summary>5. Observations carried forward (not defects)</summary>
+<div class="finding unknown_resolution"><div class="kind">PRD correction &mdash; D-01</div>
+Login does not always land on <span class="mono">/dashboard/index</span>: a protected URL requested while logged out is preserved as the post-login destination. Sensible behaviour, but the PRD acceptance criterion for FR-AUTH-2 is written as an absolute and should be amended. TC-AUTH-UI-003 passes on its own path.
+</div>
+<div class="finding unknown_resolution"><div class="kind">PRD correction &mdash; D-05</div>
+Error semantics differ per resource: <span class="mono">GET /admin/users/999999</span> returns 404 Record Not Found where the PRD documents 422 Invalid Parameter for the PIM equivalent. FR-API-6 / FR-API-7 cannot be asserted uniformly. The separate <span class="mono">error.status</span> type inconsistency is a real defect and is filed as BUG-03.
+</div>
+<div class="finding unknown_resolution"><div class="kind">API design wart &mdash; D-06</div>
+<span class="mono">PUT /api/v2/admin/users/{id}</span> requires a <span class="mono">password</span> key even when <span class="mono">changePassword</span> is false; <span class="mono">null</span> is rejected and only <span class="mono">""</span> is accepted. TC-ADM-API-023 and TC-ADM-API-024 pass because they assert this documented behaviour, but it is a trap for integrators and warrants a design follow-up.
+</div>
+<div class="finding unknown_resolution"><div class="kind">Policy review &mdash; D-07</div>
+Effective password policy is &ge; 7 characters, &ge; 1 digit, &ge; 1 lower-case letter. No upper-case, symbol or complexity requirement &mdash; <span class="mono">abcdef1</span> is accepted. The requirement as written is met; whether the policy is strong enough is a product decision.
+</div>
+<div class="finding unknown_resolution"><div class="kind">Scope correction &mdash; D-08</div>
+<span class="mono">api.orangehrm.com</span> documents the Professional / Enterprise API, which explicitly excludes Open Source and differs in base path, resource names, verbs, auth model and field casing. FR-API-12, FR-API-13 and FR-API-14 are not testable against this build and should be marked out of scope.
+</div>
+<div class="finding unknown_resolution"><div class="kind">Automation hazard &mdash; D-09</div>
+Field validation is debounced: reading <span class="mono">.oxd-input-field-error-message</span> immediately after typing returns the previous value's message. Every assertion must wait for the message to settle (~1&ndash;2 s after blur) or it will assert stale text.
+</div>
+<div class="finding unknown_resolution"><div class="kind">Test-data risk &mdash; D-10</div>
+The demo is shared and publicly credentialled; the user list moved from 11 to 12 records mid-exploration with no action from the tester. Tests must create and clean up their own fixtures and must not assert absolute record counts, user ids or list ordering.
+</div>
+<p class="empty" style="margin-top:10px;">Review findings recorded under TC-AUTH-UI-030: <span class="mono">x-frame-options</span> and <span class="mono">referrer-policy</span> are absent, the CSP includes <span class="mono">'unsafe-inline'</span> and <span class="mono">'unsafe-eval'</span>, and the deprecated <span class="mono">public-key-pins</span> header is still served. These did not fail the case as written but belong in a security follow-up.</p>
+</details>
+
+<details class="section-collapse" open>
+<summary>6. Artifacts</summary>
+<div style="font-size:13px; color:var(--ink-2);">
+<p style="margin-top:0;"><b>Defect reports:</b> <span class="mono">Execution-outputs/Manual/Defect_Reports_2026-10-13.md</span></p>
+<p style="margin:0 0 6px;"><b>Executed test design:</b> <span class="mono">Project-Documents/Test_Cases_Executed_2026-10-13.csv</span> &mdash; the input CSV with Actual Result and Status populated. The original <span class="mono">Test_Cases.csv</span> is left untouched.</p>
+<p style="margin:0 0 6px;"><b>Execution evidence:</b> <span class="mono">Project-Documents/exploration.md</span></p>
+<p style="margin:0;"><b>Requirements:</b> <span class="mono">Project-Documents/PRD.md</span></p>
+</div>
+</details>
+
+</div>
+<script>
+(function(){
+  var cards = Array.prototype.slice.call(document.querySelectorAll('details.tc'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('details.section-collapse'));
+  var categories = Array.prototype.slice.call(document.querySelectorAll('details.tc-category'));
+  var search = document.getElementById('tcSearch');
+  var statusSel = document.getElementById('tcStatusFilter');
+  var categorySel = document.getElementById('tcCategoryFilter');
+  var countEl = document.getElementById('tcCount');
+  var noResultsEl = document.getElementById('tcNoResults');
+  var resetBtn = document.getElementById('tcResetFilters');
+  var expandBtn = document.getElementById('tcExpandAll');
+  var collapseBtn = document.getElementById('tcCollapseAll');
+
+  function applyFilter(){
+    var q = search.value.trim().toLowerCase();
+    var status = statusSel.value;
+    var category = categorySel.value;
+    var visible = 0;
+    cards.forEach(function(card){
+      var matchesStatus = !status || card.classList.contains(status);
+      var matchesText = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+      var matchesCategory = !category || card.closest('details.tc-category').getAttribute('data-cat') === category;
+      var show = matchesStatus && matchesText && matchesCategory;
+      card.classList.toggle('js-hidden', !show);
+      if (show) visible++;
+      if (show && q) card.open = true;
+    });
+    categories.forEach(function(cat){
+      var anyVisible = cat.querySelector('details.tc:not(.js-hidden)');
+      var matchesCategory = !category || cat.getAttribute('data-cat') === category;
+      cat.classList.toggle('cat-empty', !anyVisible || !matchesCategory);
+      if (anyVisible && matchesCategory && (q || status || category)) cat.open = true;
+    });
+    countEl.textContent = visible + ' / ' + cards.length + ' shown';
+    noResultsEl.classList.toggle('js-hidden', visible !== 0);
+  }
+
+  search.addEventListener('input', applyFilter);
+  statusSel.addEventListener('change', applyFilter);
+  categorySel.addEventListener('change', applyFilter);
+  resetBtn.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    search.value = '';
+    statusSel.value = '';
+    categorySel.value = '';
+    applyFilter();
+  });
+  expandBtn.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    cards.forEach(function(c){ c.open = true; });
+    sections.forEach(function(s){ s.open = true; });
+    categories.forEach(function(c){ c.open = true; });
+    Array.prototype.forEach.call(document.querySelectorAll('details.tc details'), function(d){ d.open = true; });
+  });
+  collapseBtn.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    cards.forEach(function(c){ c.open = false; });
+    sections.forEach(function(s){ s.open = false; });
+    categories.forEach(function(c){ c.open = false; });
+    Array.prototype.forEach.call(document.querySelectorAll('details.tc details'), function(d){ d.open = false; });
+  });
+
+  categories.forEach(function(cat){
+    var catCards = Array.prototype.slice.call(cat.querySelectorAll('details.tc'));
+    var catExpandBtn = cat.querySelector('.tc-cat-expand');
+    var catCollapseBtn = cat.querySelector('.tc-cat-collapse');
+    catExpandBtn.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      catCards.forEach(function(c){ c.open = true; });
+    });
+    catCollapseBtn.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      catCards.forEach(function(c){ c.open = false; });
+    });
+  });
+
+  applyFilter();
+
+  Array.prototype.slice.call(document.querySelectorAll('.hop')).forEach(function(hop){
+    var panel = hop.querySelector('.hop-reqres-panel');
+    var endpointSpan = hop.querySelector('.hop-endpoint');
+    var toggle = document.createElement('a');
+    toggle.href = '#';
+    toggle.className = 'hop-reqres-toggle';
+    toggle.textContent = 'View req & response';
+
+    if (panel) {
+      panel.classList.add('js-hidden');
+      toggle.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var hidden = panel.classList.toggle('js-hidden');
+        toggle.textContent = hidden ? 'View req & response' : 'Hide req & response';
+      });
+      endpointSpan.parentNode.insertBefore(toggle, endpointSpan.nextSibling);
+      return;
+    }
+
+    var hds = Array.prototype.slice.call(hop.querySelectorAll('.hd'));
+    var reqEl = hds[0];
+    var resEl = hds[1];
+    if (!reqEl || !resEl) return;
+    reqEl.classList.add('hop-reqres', 'js-hidden');
+    resEl.classList.add('hop-reqres', 'js-hidden');
+    toggle.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      var hidden = reqEl.classList.toggle('js-hidden');
+      resEl.classList.toggle('js-hidden', hidden);
+      toggle.textContent = hidden ? 'View req & response' : 'Hide req & response';
+    });
+    endpointSpan.parentNode.insertBefore(toggle, endpointSpan.nextSibling);
+  });
+
+  Array.prototype.slice.call(document.querySelectorAll('.tc-reqres-anchor')).forEach(function(anchor){
+    var card = anchor.closest('details.tc');
+    var panel = card ? card.querySelector(':scope > .tc-reqres-panel') : null;
+    if (!panel) return;
+    panel.classList.add('js-hidden');
+    var toggle = document.createElement('a');
+    toggle.href = '#';
+    toggle.className = 'hop-reqres-toggle tc-reqres-toggle';
+    toggle.textContent = 'View req & response';
+    toggle.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      var hidden = panel.classList.toggle('js-hidden');
+      toggle.textContent = hidden ? 'View req & response' : 'Hide req & response';
+    });
+    anchor.parentNode.insertBefore(toggle, anchor.nextSibling);
+  });
+})();
+</script>
+</body></html>

@@ -11,7 +11,7 @@
         "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:/Users/MANS/IdeaProjects/AI_WorkFlow"
+        "."
       ]
     },
     "playwright": {

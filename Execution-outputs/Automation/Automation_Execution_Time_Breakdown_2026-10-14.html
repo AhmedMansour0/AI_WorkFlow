@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automation Execution Time Breakdown — 2026-10-14</title>
+<style>
+  :root{
+    color-scheme: light;
+    --paper:#F3F5F8; --surface:#FFFFFF; --surface-2:#EAEEF4;
+    --ink:#10151F; --ink-2:#45536B; --ink-muted:#7C8AA0;
+    --line:#DDE3EC; --line-strong:#C6CEDC;
+    --accent:#2A78D6; --accent-ink:#1C5CAB; --accent-wash:#E4EEFA;
+    --good:#0CA30C; --warning:#C98A17; --serious:#D9673C; --critical:#D03B3B;
+    --good-wash:rgba(12,163,12,0.12); --warning-wash:rgba(250,178,25,0.16);
+    --serious-wash:rgba(236,131,90,0.14); --critical-wash:rgba(208,59,59,0.12);
+    --shadow:rgba(16,21,31,0.08);
+    --time-exec:#2A78D6; --time-wait:#C98A17; --time-claude:#7C5CE0; --time-report:#0C9488; --time-overhead:#7C8AA0;
+    --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Consolas,"Courier New",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --paper:#0A0E15; --surface:#111826; --surface-2:#16202F;
+      --ink:#EDF1F7; --ink-2:#B7C2D1; --ink-muted:#8290A6;
+      --line:#232E40; --line-strong:#324058;
+      --accent:#3987E5; --accent-ink:#8FBBEF; --accent-wash:#152A45;
+      --good:#35C24A; --warning:#E3A730; --serious:#E88A5E; --critical:#EA5B5B;
+      --good-wash:rgba(53,194,74,0.16); --warning-wash:rgba(227,167,48,0.16);
+      --serious-wash:rgba(232,138,94,0.16); --critical-wash:rgba(234,91,91,0.18);
+      --shadow:rgba(0,0,0,0.5);
+      --time-exec:#3987E5; --time-wait:#E3A730; --time-claude:#9B85F0; --time-report:#2FD1C0; --time-overhead:#8290A6;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --paper:#0A0E15; --surface:#111826; --surface-2:#16202F;
+    --ink:#EDF1F7; --ink-2:#B7C2D1; --ink-muted:#8290A6;
+    --line:#232E40; --line-strong:#324058;
+    --accent:#3987E5; --accent-ink:#8FBBEF; --accent-wash:#152A45;
+    --good:#35C24A; --warning:#E3A730; --serious:#E88A5E; --critical:#EA5B5B;
+    --good-wash:rgba(53,194,74,0.16); --warning-wash:rgba(227,167,48,0.16);
+    --serious-wash:rgba(232,138,94,0.16); --critical-wash:rgba(234,91,91,0.18);
+    --shadow:rgba(0,0,0,0.5);
+    --time-exec:#3987E5; --time-wait:#E3A730; --time-claude:#9B85F0; --time-report:#2FD1C0; --time-overhead:#8290A6;
+  }
+  :root[data-theme="light"]{
+    color-scheme: light;
+    --paper:#F3F5F8; --surface:#FFFFFF; --surface-2:#EAEEF4;
+    --ink:#10151F; --ink-2:#45536B; --ink-muted:#7C8AA0;
+    --line:#DDE3EC; --line-strong:#C6CEDC;
+    --accent:#2A78D6; --accent-ink:#1C5CAB; --accent-wash:#E4EEFA;
+    --good:#0CA30C; --warning:#C98A17; --serious:#D9673C; --critical:#D03B3B;
+    --good-wash:rgba(12,163,12,0.12); --warning-wash:rgba(250,178,25,0.16);
+    --serious-wash:rgba(236,131,90,0.14); --critical-wash:rgba(208,59,59,0.12);
+    --shadow:rgba(16,21,31,0.08);
+    --time-exec:#2A78D6; --time-wait:#C98A17; --time-claude:#7C5CE0; --time-report:#0C9488; --time-overhead:#7C8AA0;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:var(--paper); color:var(--ink); font-family:var(--font-sans);
+        font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; transition-duration:.001ms !important; } }
+  a{ color:var(--accent-ink); }
+  .wrap{ max-width:1040px; margin:0 auto; padding:32px 20px 80px; }
+  .dashboard-card{ background:var(--surface); border:1px solid var(--line-strong); border-radius:24px; padding:24px; }
+  code,.mono{ font-family:var(--font-mono); font-size:.92em; }
+  .tb-back{ font-size:13px; color:var(--ink-muted); text-decoration:none; }
+  .tb-back:hover{ text-decoration:underline; }
+  .header{ margin-bottom:20px; }
+  .header h1{ font-size:30px; font-weight:800; margin:10px 0 8px; }
+  .meta-card{ margin-top:8px; }
+  .fields{ display:flex; flex-direction:column; gap:4px; margin:4px 0 6px; }
+  .field-row{ display:flex; flex-wrap:wrap; gap:4px 28px; }
+  .field{ font-size:14px; display:flex; gap:6px; }
+  .field .k{ color:var(--ink-2); font-weight:700; font-size:15px; letter-spacing:normal; text-transform:none; flex-shrink:0; }
+  .field .k::after{ content:':'; }
+  .field .v{ color:var(--ink); }
+  h2.section-num{ font-size:15px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2);
+      border-bottom:1px solid var(--line); padding-bottom:6px; margin:32px 0 14px; }
+  .empty{ color:var(--ink-muted); font-size:13px; font-style:italic; }
+
+  .tb-cat-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:22px; }
+  .tb-cat-card{ text-align:center; }
+  .tb-cat-card .val{ font-size:22px; font-weight:700; color:var(--ink); }
+  .tb-cat-card .pct{ font-size:13px; font-weight:600; margin-top:2px; }
+  .tb-cat-card .lbl{ font-size:12px; color:var(--ink-muted); margin-top:4px; }
+  .tb-cat-card .swatch{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:middle; }
+  .tb-cat-card.exec .pct{ color:var(--time-exec); }
+  .tb-cat-card.wait .pct{ color:var(--time-wait); }
+  .tb-cat-card.claude .pct{ color:var(--time-claude); }
+  .tb-cat-card.report .pct{ color:var(--time-report); }
+  .tb-cat-card.overhead .pct{ color:var(--time-overhead); }
+
+  .tb-bars{ display:flex; flex-direction:column; gap:10px; margin:18px 0 20px; }
+  .tb-bar-row{ display:flex; align-items:center; gap:14px; }
+  .tb-bar-label{ width:180px; flex-shrink:0; font-size:13px; font-weight:600; color:var(--ink-2); display:flex; align-items:center; gap:8px; }
+  .tb-bar-track{ flex:1 1 auto; background:var(--surface-2); border-radius:7px; height:16px; overflow:hidden; }
+  .tb-bar-fill{ height:100%; border-radius:7px; }
+  .tb-bar-value{ width:170px; flex-shrink:0; text-align:right; font-size:12.5px; color:var(--ink-2); font-family:var(--font-mono); }
+
+  .tb-reconcile{ font-size:13px; color:var(--ink-2); margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .tb-reconcile b{ color:var(--ink); }
+  .tb-warning{ background:var(--warning-wash); border:1px solid var(--warning); border-radius:12px; padding:12px 14px; margin-top:12px; font-size:13px; color:var(--ink); }
+  .tb-warning .w-title{ font-weight:700; color:var(--warning); margin-bottom:4px; }
+
+  table.tb-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.tb-table th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-muted); font-weight:700; padding:8px 10px; border-bottom:1px solid var(--line-strong); white-space:nowrap; }
+  table.tb-table td{ padding:9px 10px; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top; overflow-wrap:anywhere; }
+  table.tb-table tr:last-child td{ border-bottom:none; }
+  table.tb-table td.num, table.tb-table th.num{ text-align:right; font-family:var(--font-mono); white-space:nowrap; }
+  .tb-table-wrap{ overflow-x:auto; }
+  table.tb-table tr.tb-sub td{ background:rgba(127,127,127,.06); font-size:12.5px; }
+  table.tb-table tr.tb-sub td:first-child{ padding-left:28px; }
+  .tb-sub-arrow{ color:var(--ink-muted); margin-right:8px; }
+  table.tb-table tfoot td{ border-top:1px solid var(--line-strong); padding-top:12px; }
+  .tb-foot-note{ font-weight:400; color:var(--ink-muted); font-size:12px; }
+
+  .tc-toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; position:sticky; top:0; z-index:5; background:var(--paper); padding:6px 0; }
+  .tc-toolbar input[type="search"]{ flex:1 1 220px; min-width:160px; padding:7px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:13px; }
+  .tc-toolbar select{ padding:7px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:13px; }
+  .tc-toolbar button{ padding:7px 12px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2); font-size:12px; font-weight:600; cursor:pointer; }
+  .tc-toolbar button:hover{ background:var(--surface-2); }
+  #tcbReset{ color:var(--critical); border-color:var(--critical); }
+  #tcbReset:hover{ background:var(--critical-wash); }
+  .tc-toolbar .tc-count{ font-size:12px; color:var(--ink-muted); margin-left:auto; white-space:nowrap; }
+  .tb-no-results{ padding:24px 16px; text-align:center; color:var(--critical); font-size:15px; font-weight:700; background:var(--critical-wash); border:1px solid var(--critical); border-radius:12px; margin-top:8px; }
+  .tb-no-results.js-hidden{ display:none; }
+
+  table.tcb-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  table.tcb-table th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-muted); font-weight:700; padding:8px 9px; border-bottom:1px solid var(--line-strong); white-space:nowrap; cursor:pointer; user-select:none; }
+  table.tcb-table th:hover{ color:var(--ink); }
+  table.tcb-table th .sort-arrow{ font-size:9px; margin-left:3px; color:var(--accent-ink); }
+  table.tcb-table td{ padding:8px 9px; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top; overflow-wrap:anywhere; }
+  table.tcb-table td.num{ text-align:right; font-family:var(--font-mono); white-space:nowrap; }
+  table.tcb-table tr.js-hidden{ display:none; }
+  .badge{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:5px; white-space:nowrap; }
+  .badge.PASS{ background:var(--good-wash); color:var(--good); }
+  .badge.FAIL{ background:var(--critical-wash); color:var(--critical); }
+  .badge.BLOCKED{ background:var(--serious-wash); color:var(--serious); }
+  .timing-partial{ font-size:10.5px; font-style:italic; color:var(--warning); display:block; margin-top:2px; }
+
+  .tb-timeline{ display:flex; flex-direction:column; }
+  .tb-tl-row{ display:flex; gap:14px; padding:7px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .tb-tl-row:last-child{ border-bottom:none; }
+  .tb-tl-time{ width:150px; flex-shrink:0; font-family:var(--font-mono); color:var(--ink-muted); font-size:12px; }
+  .tb-tl-label{ color:var(--ink-2); }
+  .tb-tl-label b{ color:var(--ink); }
+
+  .tb-overhead-box{ margin:0; padding:0; }
+  .tb-overhead-box .oh-title{ font-size:12px; font-weight:700; color:var(--ink-2); margin-bottom:8px; }
+  .tb-oh-rows{ display:flex; flex-direction:column; gap:6px; }
+  .tb-oh-row{ display:grid; grid-template-columns:minmax(0,1fr) 90px 80px; align-items:center; column-gap:16px; font-size:12.5px; color:var(--ink-2); }
+  .tb-oh-row .oh-val{ font-family:var(--font-mono); color:var(--ink); white-space:nowrap; text-align:right; }
+  .tb-phase-note{ font-size:12px; color:var(--ink-muted); margin:-6px 0 14px; }
+
+  /* --- overhead-row detail popup (added 2026-09-30): every .tb-oh-row opens #tbModal --- */
+  .tb-oh-row.tb-oh-click{ cursor:pointer; padding:6px 8px; margin:0 -8px; border-radius:8px; border:1px solid transparent; }
+  .tb-oh-row.tb-oh-click:hover, .tb-oh-row.tb-oh-click:focus-visible{ background:var(--accent-wash); border-color:var(--accent); outline:none; }
+  .tb-table tr.tb-oh-click{ cursor:pointer; }
+  .tb-table tr.tb-oh-click:hover td, .tb-table tr.tb-oh-click:focus-visible td{ background:var(--accent-wash); }
+  .tb-table td.oh-more{ color:var(--accent-ink); font-size:11px; font-weight:700; white-space:nowrap; text-align:right; }
+  .tb-oh-row .oh-more{ color:var(--accent-ink); font-size:11px; font-weight:700; white-space:nowrap; text-align:right; }
+  @media (max-width:560px){ .tb-oh-row{ grid-template-columns:minmax(0,1fr) auto; } .tb-oh-row .oh-more{ display:none; } }
+  .tb-modal{ position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(10,14,21,.55); }
+  .tb-modal.js-hidden{ display:none; }
+  .tb-modal-card{ background:var(--surface); color:var(--ink); border:1px solid var(--line-strong); border-radius:14px; box-shadow:0 18px 50px var(--shadow); width:min(720px,100%); max-height:88vh; overflow:auto; padding:20px 22px; }
+  .tb-modal-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px; }
+  .tb-modal-title{ font-size:16px; font-weight:700; }
+  .tb-modal-x{ border:1px solid var(--line-strong); background:var(--surface-2); color:var(--ink); border-radius:8px; padding:2px 10px; font-size:16px; cursor:pointer; }
+  .tb-modal-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:14px; }
+  .tb-modal-grid .mg{ background:var(--surface-2); border-radius:10px; padding:8px 12px; }
+  .tb-modal-grid .mg .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-muted); font-weight:700; }
+  .tb-modal-grid .mg .v{ font-size:13px; font-family:var(--font-mono); margin-top:2px; }
+  .tb-modal h4{ margin:12px 0 4px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2); }
+  .tb-modal p, .tb-modal li{ font-size:13px; line-height:1.55; color:var(--ink-2); margin:0 0 4px; }
+  .tb-modal ol{ margin:0; padding-left:20px; }
+  .tb-modal .mnote{ margin-top:14px; font-size:11.5px; color:var(--ink-muted); }
+  /* --- collapsible sections 2-6 (click the title) --- */
+  details.tb-sec{ margin:0; }
+  details.tb-sec > summary{ font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2);
+      border-bottom:1px solid var(--line); padding-bottom:6px; margin:32px 0 14px; cursor:pointer; list-style:none; }
+  details.tb-sec > summary::-webkit-details-marker{ display:none; }
+  details.tb-sec > summary:hover{ color:var(--accent-ink); }
+  /* --- Expand all / Collapse all above section 2 --- */
+.tc-actions{ display:flex; justify-content:flex-end; gap:8px; margin:32px 0 8px; }
+.tc-actions button{ padding:7px 12px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2); font-size:12px; font-weight:600; cursor:pointer; }
+.tc-cat-actions{ display:flex; justify-content:flex-end; gap:8px; margin:4px 0 10px; }
+.tc-cat-actions button{ padding:5px 10px; border-radius:7px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2); font-size:11px; font-weight:600; cursor:pointer; }
+.tc-cat-actions button:hover{ background:var(--surface-2); }
+.tc-actions button:hover{ background:var(--surface-2); }
+</style>
+</head>
+<body><div class="wrap">
+<a class="tb-back" href="./Automation_Execution_Summary_2026-10-14.html">&larr; Back to QA Execution Report</a>
+<div class="header"> <h1>Execution Time Breakdown &mdash; 2026-10-14 (Automation)</h1> </div>
+<div class="meta-card dashboard-card"> <div class="field-row">
+<div class="field"><span class="k">Total Duration</span><span class="v">18m 1s</span></div>
+<div class="field"><span class="k">Execution Start</span><span class="v">2026-10-14 13:32:54 UTC</span></div>
+<div class="field"><span class="k">Execution End</span><span class="v">2026-10-14 13:50:55 UTC</span></div>
+</div> </div>
+<h2 class="section-num">1. Time Breakdown</h2>
+<div class="tb-cat-cards"><div class="tb-cat-card exec dashboard-card"><div class="val">2m 25s</div><div class="pct">13.4%</div><div class="lbl"><span class="swatch" style="background:var(--time-exec)"></span>Test Case Execution</div></div> <div class="tb-cat-card wait dashboard-card"><div class="val">0 ms</div><div class="pct">0.0%</div><div class="lbl"><span class="swatch" style="background:var(--time-wait)"></span>Waiting</div></div> <div class="tb-cat-card claude dashboard-card"><div class="val">11m 54s</div><div class="pct">66.1%</div><div class="lbl"><span class="swatch" style="background:var(--time-claude)"></span>Claude / AI Processing</div></div> <div class="tb-cat-card report dashboard-card"><div class="val">172 ms</div><div class="pct">0.0%</div><div class="lbl"><span class="swatch" style="background:var(--time-report)"></span>Reporting</div></div> <div class="tb-cat-card overhead dashboard-card"><div class="val">3m 42s</div><div class="pct">20.5%</div><div class="lbl"><span class="swatch" style="background:var(--time-overhead)"></span>Other / Overhead</div></div></div>
+<div class="dashboard-card"> <div class="tb-bars"><div class="tb-bar-row"><div class="tb-bar-label"><span class="swatch" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--time-exec)"></span>Test Case Execution</div><div class="tb-bar-track"><div class="tb-bar-fill" style="width:13.4%;background:var(--time-exec)"></div></div><div class="tb-bar-value">2m 25s &middot; 13.4%</div></div> <div class="tb-bar-row"><div class="tb-bar-label"><span class="swatch" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--time-wait)"></span>Waiting</div><div class="tb-bar-track"><div class="tb-bar-fill" style="width:0.0%;background:var(--time-wait)"></div></div><div class="tb-bar-value">0 ms &middot; 0.0%</div></div> <div class="tb-bar-row"><div class="tb-bar-label"><span class="swatch" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--time-claude)"></span>Claude / AI Processing</div><div class="tb-bar-track"><div class="tb-bar-fill" style="width:66.1%;background:var(--time-claude)"></div></div><div class="tb-bar-value">11m 54s &middot; 66.1%</div></div> <div class="tb-bar-row"><div class="tb-bar-label"><span class="swatch" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--time-report)"></span>Reporting</div><div class="tb-bar-track"><div class="tb-bar-fill" style="width:0.0%;background:var(--time-report)"></div></div><div class="tb-bar-value">172 ms &middot; 0.0%</div></div> <div class="tb-bar-row"><div class="tb-bar-label"><span class="swatch" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--time-overhead)"></span>Other / Overhead</div><div class="tb-bar-track"><div class="tb-bar-fill" style="width:20.5%;background:var(--time-overhead)"></div></div><div class="tb-bar-value">3m 42s &middot; 20.5%</div></div></div>
+<div class="tb-reconcile">Accounted Time: <b>18m 1s</b> &nbsp;=&nbsp; Total Duration: <b>18m 1s</b> &nbsp;&#10003;</div> </div>
+<div class="tc-actions"> <button type="button" id="tbExpandAll">Expand all</button> <button type="button" id="tbCollapseAll">Collapse all</button> </div>
+<details class="tb-sec" open><summary>2. Execution Phases</summary>
+<div class="tb-phase-note">Phases are wall-clock stages of the run, measured from the moment Step 0 was answered (the time spent asking it was not logged). Tests ran on 3 parallel workers, so <b>Test Case Execution</b> (2m 25s) counts wall-clock time once; individual test durations add up to 6m 57s. Click a phase row for the breakdown.</div>
+<div class="dashboard-card tb-table-wrap"> <table class="tb-table"> <thead><tr><th>Phase</th><th>Start</th><th>End</th><th class="num">Duration</th><th class="num">%</th><th></th></tr></thead> <tbody>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Preparation: evidence tooling&quot;,&quot;start&quot;:&quot;2026-10-14 13:32:54 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:36:01 UTC&quot;,&quot;duration&quot;:&quot;3m 7s&quot;,&quot;share&quot;:&quot;17.3% of total&quot;,&quot;before&quot;:&quot;Step 0 answered: AUTH selected (36 automatable cases, all already automated).&quot;,&quot;after&quot;:&quot;Next: run 1.&quot;,&quot;steps&quot;:[&quot;Confirmed test_cases.csv unchanged since the suite was written.&quot;,&quot;Added bugEvidence fixture and recordExchange(); updated 3 known-defect specs and 6 API specs; typecheck passed.&quot;],&quot;note&quot;:&quot;&quot;}"><td>Preparation: evidence tooling</td><td>13:32:54</td><td>13:36:01</td><td class="num">3m 7s</td><td class="num">17.3%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Run 1 (discarded)&quot;,&quot;start&quot;:&quot;2026-10-14 13:36:01 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:39:37 UTC&quot;,&quot;duration&quot;:&quot;3m 36s&quot;,&quot;share&quot;:&quot;20.0% of total&quot;,&quot;before&quot;:&quot;Tooling ready.&quot;,&quot;after&quot;:&quot;Next: evidence review.&quot;,&quot;steps&quot;:[&quot;npx playwright test --grep @auth → 37/37 as expected.&quot;,&quot;Discarded: the red label covered the \&quot;504 Gateway Time-out\&quot; heading in two screenshots.&quot;],&quot;note&quot;:&quot;Counted as Other / Overhead because its results are not reported.&quot;}"><td>Run 1 (discarded)</td><td>13:36:01</td><td>13:39:37</td><td class="num">3m 36s</td><td class="num">20.0%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Evidence fix&quot;,&quot;start&quot;:&quot;2026-10-14 13:39:37 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:41:32 UTC&quot;,&quot;duration&quot;:&quot;1m 55s&quot;,&quot;share&quot;:&quot;10.6% of total&quot;,&quot;before&quot;:&quot;Run 1 finished.&quot;,&quot;after&quot;:&quot;Next: run 2.&quot;,&quot;steps&quot;:[&quot;Label now moves below an element when there is no room above it.&quot;],&quot;note&quot;:&quot;&quot;}"><td>Evidence fix</td><td>13:39:37</td><td>13:41:32</td><td class="num">1m 55s</td><td class="num">10.6%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Test Execution (run 2, reported)&quot;,&quot;start&quot;:&quot;2026-10-14 13:41:32 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:44:02 UTC&quot;,&quot;duration&quot;:&quot;2m 30s&quot;,&quot;share&quot;:&quot;13.9% of total&quot;,&quot;before&quot;:&quot;Fix applied.&quot;,&quot;after&quot;:&quot;Next: triage and reporting.&quot;,&quot;steps&quot;:[&quot;37 test entries on 3 workers; tests were running for 2m 25s of wall-clock time.&quot;,&quot;Sum of individual test durations: 6m 57s (parallel, so larger than wall-clock).&quot;],&quot;note&quot;:&quot;Phase times are wall-clock; they are not the same as the five categories in section 1.&quot;}"><td>Test Execution (run 2, reported)</td><td>13:41:32</td><td>13:44:02</td><td class="num">2m 30s</td><td class="num">13.9%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Triage &amp; report authoring&quot;,&quot;start&quot;:&quot;2026-10-14 13:44:02 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;duration&quot;:&quot;6m 53s&quot;,&quot;share&quot;:&quot;38.2% of total&quot;,&quot;before&quot;:&quot;Run 2 finished.&quot;,&quot;after&quot;:&quot;Next: reporting.&quot;,&quot;steps&quot;:[&quot;Checked the 3 known defects failed for their documented reasons and the evidence attachments were present.&quot;,&quot;Drafted BUG-01…BUG-03 and the report generators.&quot;],&quot;note&quot;:&quot;&quot;}"><td>Triage &amp; report authoring</td><td>13:44:02</td><td>13:50:54</td><td class="num">6m 53s</td><td class="num">38.2%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Reporting&quot;,&quot;start&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:55 UTC&quot;,&quot;duration&quot;:&quot;172 ms&quot;,&quot;share&quot;:&quot;0.0% of total&quot;,&quot;before&quot;:&quot;Generators ready.&quot;,&quot;after&quot;:&quot;Run complete.&quot;,&quot;steps&quot;:[&quot;Wrote the four Automation_ files.&quot;],&quot;note&quot;:&quot;&quot;}"><td>Reporting</td><td>13:50:54</td><td>13:50:55</td><td class="num">172 ms</td><td class="num">0.0%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click tb-sub" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Automation_Defect_Reports_2026-10-14.md&quot;,&quot;start&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;duration&quot;:&quot;5 ms&quot;,&quot;share&quot;:&quot;0.0% of total&quot;,&quot;before&quot;:&quot;Reporting phase.&quot;,&quot;after&quot;:&quot;Reporting phase.&quot;,&quot;steps&quot;:[&quot;Generated and saved Automation_Defect_Reports_2026-10-14.md.&quot;],&quot;note&quot;:&quot;&quot;}"><td><span class="tb-sub-arrow">&#8627;</span>Automation_Defect_Reports_2026-10-14.md</td><td>13:50:54</td><td>13:50:54</td><td class="num">5 ms</td><td class="num">0.0%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click tb-sub" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Automation_Healing_Log_2026-10-14.md&quot;,&quot;start&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;duration&quot;:&quot;3 ms&quot;,&quot;share&quot;:&quot;0.0% of total&quot;,&quot;before&quot;:&quot;Reporting phase.&quot;,&quot;after&quot;:&quot;Reporting phase.&quot;,&quot;steps&quot;:[&quot;Generated and saved Automation_Healing_Log_2026-10-14.md.&quot;],&quot;note&quot;:&quot;&quot;}"><td><span class="tb-sub-arrow">&#8627;</span>Automation_Healing_Log_2026-10-14.md</td><td>13:50:54</td><td>13:50:54</td><td class="num">3 ms</td><td class="num">0.0%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click tb-sub" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Automation_Execution_Summary_2026-10-14.html&quot;,&quot;start&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:55 UTC&quot;,&quot;duration&quot;:&quot;140 ms&quot;,&quot;share&quot;:&quot;0.0% of total&quot;,&quot;before&quot;:&quot;Reporting phase.&quot;,&quot;after&quot;:&quot;Reporting phase.&quot;,&quot;steps&quot;:[&quot;Generated and saved Automation_Execution_Summary_2026-10-14.html.&quot;],&quot;note&quot;:&quot;&quot;}"><td><span class="tb-sub-arrow">&#8627;</span>Automation_Execution_Summary_2026-10-14.html</td><td>13:50:54</td><td>13:50:55</td><td class="num">140 ms</td><td class="num">0.0%</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click tb-sub" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Automation_Execution_Time_Breakdown_2026-10-14.html&quot;,&quot;start&quot;:&quot;2026-10-14 13:50:55 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:55 UTC&quot;,&quot;duration&quot;:&quot;4 ms&quot;,&quot;share&quot;:&quot;0.0% of total&quot;,&quot;before&quot;:&quot;Reporting phase.&quot;,&quot;after&quot;:&quot;Reporting phase.&quot;,&quot;steps&quot;:[&quot;Generated and saved Automation_Execution_Time_Breakdown_2026-10-14.html.&quot;],&quot;note&quot;:&quot;&quot;}"><td><span class="tb-sub-arrow">&#8627;</span>Automation_Execution_Time_Breakdown_2026-10-14.html</td><td>13:50:55</td><td>13:50:55</td><td class="num">4 ms</td><td class="num">0.0%</td><td class="oh-more">Details &rsaquo;</td></tr>
+</tbody> <tfoot><tr><td colspan="3"><b>Total Reporting Time</b> <span class="tb-foot-note">(sum of the &#8627; rows under Reporting)</span></td><td class="num"><b>152 ms</b></td><td colspan="2" class="num"><span class="tb-foot-note">card: 172 ms</span></td></tr></tfoot> </table> </div> </details>
+<details class="tb-sec" open><summary>3. Claude / AI Operations</summary> <div class="dashboard-card tb-table-wrap"> <table class="tb-table"> <thead><tr><th>Operation</th><th>Related TC</th><th>Start</th><th>End</th><th class="num">Duration</th><th></th></tr></thead> <tbody>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Evidence tooling added (bugEvidence fixture, recordExchange) and specs updated&quot;,&quot;start&quot;:&quot;2026-10-14 13:32:54 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:36:01 UTC&quot;,&quot;duration&quot;:&quot;3m 7s&quot;,&quot;share&quot;:&quot;17.3% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Evidence tooling added (bugEvidence fixture, recordExchange) and specs updated.&quot;],&quot;note&quot;:&quot;Counted as Claude / AI Processing. In the Test Case Time table the 11m 54s total is split evenly across the 36 test cases (19.84s each) — an allocation, not a measurement.&quot;}"><td>Evidence tooling added (bugEvidence fixture, recordExchange) and specs updated</td><td>TC-AUTH-UI-007, 020, 022; TC-AUTH-API-001…006</td><td>13:32:54</td><td>13:36:01</td><td class="num">3m 7s</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Evidence review and label-placement fix&quot;,&quot;start&quot;:&quot;2026-10-14 13:39:37 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:41:32 UTC&quot;,&quot;duration&quot;:&quot;1m 55s&quot;,&quot;share&quot;:&quot;10.6% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Evidence review and label-placement fix.&quot;],&quot;note&quot;:&quot;Counted as Claude / AI Processing. In the Test Case Time table the 11m 54s total is split evenly across the 36 test cases (19.84s each) — an allocation, not a measurement.&quot;}"><td>Evidence review and label-placement fix</td><td>TC-AUTH-UI-020, 022</td><td>13:39:37</td><td>13:41:32</td><td class="num">1m 55s</td><td class="oh-more">Details &rsaquo;</td></tr>
+<tr class="tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Result triage, evidence verification and report generator authoring&quot;,&quot;start&quot;:&quot;2026-10-14 13:44:02 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:50:54 UTC&quot;,&quot;duration&quot;:&quot;6m 52s&quot;,&quot;share&quot;:&quot;38.1% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Result triage, evidence verification and report generator authoring.&quot;],&quot;note&quot;:&quot;Counted as Claude / AI Processing. In the Test Case Time table the 11m 54s total is split evenly across the 36 test cases (19.84s each) — an allocation, not a measurement.&quot;}"><td>Result triage, evidence verification and report generator authoring</td><td>TC-AUTH-UI-007, 020, 022</td><td>13:44:02</td><td>13:50:54</td><td class="num">6m 52s</td><td class="oh-more">Details &rsaquo;</td></tr>
+</tbody> </table> </div> </details>
+<details class="tb-sec" open><summary>4. Test Case Time</summary>
+<div class="tc-toolbar dashboard-card"> <input type="search" id="tcbSearch" placeholder="Search test case ID or title..."> <select id="tcbStatusFilter"> <option value="">All statuses</option> <option value="PASS">Passed</option> <option value="FAIL">Failed</option> </select> <select id="tcbCategoryFilter"> <option value="">All categories</option> <option value="ui">Authentication — UI</option> <option value="api">Authentication — API</option> </select> <button type="button" id="tcbReset">Reset</button> <span class="tc-count" id="tcbCount">36 / 36 shown</span> </div>
+<div class="tb-no-results js-hidden" id="tcbNoResults">No test cases match the current search/filter.</div>
+<div class="dashboard-card tb-table-wrap"> <table class="tcb-table" id="tcbTable"> <thead><tr> <th data-sort="idx" data-type="num">#</th> <th data-sort="tcid" data-type="text">Test Case ID</th> <th data-sort="title" data-type="text">Test Case</th> <th data-sort="status" data-type="text">Status</th> <th data-sort="start" data-type="num">Start</th> <th data-sort="end" data-type="num">End</th> <th data-sort="exec" data-type="num" class="num">Execution</th> <th data-sort="wait" data-type="num" class="num">Waiting</th> <th data-sort="claude" data-type="num" class="num">Claude</th> <th data-sort="report" data-type="num" class="num">Reporting</th> <th data-sort="total" data-type="num" class="num">Total</th> </tr></thead> <tbody>
+<tr data-tcid="TC-AUTH-API-001" data-title="Login endpoint authenticates and issues a session cookie" data-status="PASS" data-cat="api"> <td data-sort-v="1">1</td> <td>TC-AUTH-API-001</td> <td>Login endpoint authenticates and issues a session cookie</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985419603">13:43:39</td> <td data-sort-v="1791985426513">13:43:46</td> <td class="num" data-sort-v="6910">6.91s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="26757">26.76s</td> </tr>
+<tr data-tcid="TC-AUTH-API-002" data-title="Login endpoint refuses invalid credentials" data-status="PASS" data-cat="api"> <td data-sort-v="2">2</td> <td>TC-AUTH-API-002</td> <td>Login endpoint refuses invalid credentials</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985424983">13:43:44</td> <td data-sort-v="1791985430921">13:43:50</td> <td class="num" data-sort-v="5938">5.94s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="25785">25.78s</td> </tr>
+<tr data-tcid="TC-AUTH-API-003" data-title="Login endpoint always responds 302 regardless of outcome" data-status="PASS" data-cat="api"> <td data-sort-v="3">3</td> <td>TC-AUTH-API-003</td> <td>Login endpoint always responds 302 regardless of outcome</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985426683">13:43:46</td> <td data-sort-v="1791985437058">13:43:57</td> <td class="num" data-sort-v="10375">10.38s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="30222">30.22s</td> </tr>
+<tr data-tcid="TC-AUTH-API-004" data-title="Protected API endpoint refuses an unauthenticated request" data-status="PASS" data-cat="api"> <td data-sort-v="4">4</td> <td>TC-AUTH-API-004</td> <td>Protected API endpoint refuses an unauthenticated request</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985431055">13:43:51</td> <td data-sort-v="1791985431504">13:43:51</td> <td class="num" data-sort-v="449">449 ms</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="20296">20.3s</td> </tr>
+<tr data-tcid="TC-AUTH-API-005" data-title="API refuses a request bearing a post-logout cookie" data-status="PASS" data-cat="api"> <td data-sort-v="5">5</td> <td>TC-AUTH-API-005</td> <td>API refuses a request bearing a post-logout cookie</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985431514">13:43:51</td> <td data-sort-v="1791985440998">13:44:00</td> <td class="num" data-sort-v="9484">9.48s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="29331">29.33s</td> </tr>
+<tr data-tcid="TC-AUTH-API-006" data-title="Authenticated web client calls succeed with the session cookie" data-status="PASS" data-cat="api"> <td data-sort-v="6">6</td> <td>TC-AUTH-API-006</td> <td>Authenticated web client calls succeed with the session cookie</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985437067">13:43:57</td> <td data-sort-v="1791985442616">13:44:02</td> <td class="num" data-sort-v="5549">5.55s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="25396">25.4s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-001" data-title="Login screen renders all mandatory elements" data-status="PASS" data-cat="ui"> <td data-sort-v="7">7</td> <td>TC-AUTH-UI-001</td> <td>Login screen renders all mandatory elements</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985302789">13:41:42</td> <td data-sort-v="1791985311617">13:41:51</td> <td class="num" data-sort-v="8828">8.83s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="28675">28.67s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-002" data-title="Login form posts to the correct action with a CSRF token" data-status="PASS" data-cat="ui"> <td data-sort-v="8">8</td> <td>TC-AUTH-UI-002</td> <td>Login form posts to the correct action with a CSRF token</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985302803">13:41:42</td> <td data-sort-v="1791985310809">13:41:50</td> <td class="num" data-sort-v="8006">8.01s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="27853">27.85s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-003" data-title="Valid credentials authenticate successfully" data-status="PASS" data-cat="ui"> <td data-sort-v="9">9</td> <td>TC-AUTH-UI-003</td> <td>Valid credentials authenticate successfully</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985302834">13:41:42</td> <td data-sort-v="1791985313628">13:41:53</td> <td class="num" data-sort-v="10794">10.79s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="30641">30.64s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-004" data-title="Login preserves the originally requested protected URL (deep link)" data-status="PASS" data-cat="ui"> <td data-sort-v="10">10</td> <td>TC-AUTH-UI-004</td> <td>Login preserves the originally requested protected URL (deep link)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985311111">13:41:51</td> <td data-sort-v="1791985317818">13:41:57</td> <td class="num" data-sort-v="6707">6.71s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="26554">26.55s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-005" data-title="Invalid password is rejected without field disclosure" data-status="PASS" data-cat="ui"> <td data-sort-v="11">11</td> <td>TC-AUTH-UI-005</td> <td>Invalid password is rejected without field disclosure</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985311817">13:41:51</td> <td data-sort-v="1791985320470">13:42:00</td> <td class="num" data-sort-v="8653">8.65s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="28500">28.5s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-006" data-title="Non-existent username is rejected with the identical message" data-status="PASS" data-cat="ui"> <td data-sort-v="12">12</td> <td>TC-AUTH-UI-006</td> <td>Non-existent username is rejected with the identical message</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985313921">13:41:53</td> <td data-sort-v="1791985320146">13:42:00</td> <td class="num" data-sort-v="6225">6.22s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="26072">26.07s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-007" data-title="Disabled account must not be distinguishable from invalid credentials" data-status="FAIL" data-cat="ui"> <td data-sort-v="13">13</td> <td>TC-AUTH-UI-007</td> <td>Disabled account must not be distinguishable from invalid credentials</td> <td><span class="badge FAIL">FAIL</span></td> <td data-sort-v="1791985346401">13:42:26</td> <td data-sort-v="1791985363848">13:42:43</td> <td class="num" data-sort-v="17447">17.45s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="37294">37.29s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-008" data-title="Disabled account with a wrong password (contrast case for D-02)" data-status="PASS" data-cat="ui"> <td data-sort-v="14">14</td> <td>TC-AUTH-UI-008</td> <td>Disabled account with a wrong password (contrast case for D-02)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985346451">13:42:26</td> <td data-sort-v="1791985357002">13:42:37</td> <td class="num" data-sort-v="10551">10.55s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="30398">30.4s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-009" data-title="Both fields empty triggers client-side required validation" data-status="PASS" data-cat="ui"> <td data-sort-v="15">15</td> <td>TC-AUTH-UI-009</td> <td>Both fields empty triggers client-side required validation</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985317828">13:41:57</td> <td data-sort-v="1791985322828">13:42:02</td> <td class="num" data-sort-v="5000">5s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="24847">24.85s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-010" data-title="Username empty with password supplied" data-status="PASS" data-cat="ui"> <td data-sort-v="16">16</td> <td>TC-AUTH-UI-010</td> <td>Username empty with password supplied</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985320155">13:42:00</td> <td data-sort-v="1791985325571">13:42:05</td> <td class="num" data-sort-v="5416">5.42s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="25263">25.26s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-011" data-title="Password empty with username supplied" data-status="PASS" data-cat="ui"> <td data-sort-v="17">17</td> <td>TC-AUTH-UI-011</td> <td>Password empty with username supplied</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985320478">13:42:00</td> <td data-sort-v="1791985330190">13:42:10</td> <td class="num" data-sort-v="9712">9.71s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="29559">29.56s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-012" data-title="Whitespace-only input is treated as empty (boundary)" data-status="PASS" data-cat="ui"> <td data-sort-v="18">18</td> <td>TC-AUTH-UI-012</td> <td>Whitespace-only input is treated as empty (boundary)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985322838">13:42:02</td> <td data-sort-v="1791985337508">13:42:17</td> <td class="num" data-sort-v="14670">14.67s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="34517">34.52s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-013" data-title="Username case-sensitivity is deterministic (negative)" data-status="PASS" data-cat="ui"> <td data-sort-v="19">19</td> <td>TC-AUTH-UI-013</td> <td>Username case-sensitivity is deterministic (negative)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985325581">13:42:05</td> <td data-sort-v="1791985334751">13:42:14</td> <td class="num" data-sort-v="9170">9.17s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="29017">29.02s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-014" data-title="Password is case-sensitive (negative)" data-status="PASS" data-cat="ui"> <td data-sort-v="20">20</td> <td>TC-AUTH-UI-014</td> <td>Password is case-sensitive (negative)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985330201">13:42:10</td> <td data-sort-v="1791985337524">13:42:17</td> <td class="num" data-sort-v="7323">7.32s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="27170">27.17s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-015" data-title="Leading and trailing whitespace around a valid username (boundary)" data-status="PASS" data-cat="ui"> <td data-sort-v="21">21</td> <td>TC-AUTH-UI-015</td> <td>Leading and trailing whitespace around a valid username (boundary)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985334762">13:42:14</td> <td data-sort-v="1791985342787">13:42:22</td> <td class="num" data-sort-v="8025">8.03s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="27872">27.87s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-016" data-title="Very long username is handled without server error (boundary)" data-status="PASS" data-cat="ui"> <td data-sort-v="22">22</td> <td>TC-AUTH-UI-016</td> <td>Very long username is handled without server error (boundary)</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985337520">13:42:17</td> <td data-sort-v="1791985346443">13:42:26</td> <td class="num" data-sort-v="8923">8.92s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="28770">28.77s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-017" data-title="Special characters in credentials are handled safely" data-status="PASS" data-cat="ui"> <td data-sort-v="23">23</td> <td>TC-AUTH-UI-017</td> <td>Special characters in credentials are handled safely</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985337532">13:42:17</td> <td data-sort-v="1791985346392">13:42:26</td> <td class="num" data-sort-v="8860">8.86s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="28707">28.71s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-018" data-title="Password field masks its input" data-status="PASS" data-cat="ui"> <td data-sort-v="24">24</td> <td>TC-AUTH-UI-018</td> <td>Password field masks its input</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985342796">13:42:22</td> <td data-sort-v="1791985347852">13:42:27</td> <td class="num" data-sort-v="5056">5.06s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="24903">24.9s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-019" data-title="Forgot-password entry point navigates to the reset screen" data-status="PASS" data-cat="ui"> <td data-sort-v="25">25</td> <td>TC-AUTH-UI-019</td> <td>Forgot-password entry point navigates to the reset screen</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985347865">13:42:27</td> <td data-sort-v="1791985354508">13:42:34</td> <td class="num" data-sort-v="6643">6.64s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="26490">26.49s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-020" data-title="Reset Password screen accepts a username and submits" data-status="FAIL" data-cat="ui"> <td data-sort-v="26">26</td> <td>TC-AUTH-UI-020</td> <td>Reset Password screen accepts a username and submits</td> <td><span class="badge FAIL">FAIL</span></td> <td data-sort-v="1791985354517">13:42:34</td> <td data-sort-v="1791985423759">13:43:43</td> <td class="num" data-sort-v="69242">1m 9s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="89089">1m 29s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-021" data-title="Reset Password Cancel returns to the login screen" data-status="PASS" data-cat="ui"> <td data-sort-v="27">27</td> <td>TC-AUTH-UI-021</td> <td>Reset Password Cancel returns to the login screen</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985357021">13:42:37</td> <td data-sort-v="1791985363931">13:42:43</td> <td class="num" data-sort-v="6910">6.91s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="26757">26.76s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-022" data-title="Reset request does not disclose whether a username exists" data-status="FAIL" data-cat="ui"> <td data-sort-v="28">28</td> <td>TC-AUTH-UI-022</td> <td>Reset request does not disclose whether a username exists</td> <td><span class="badge FAIL">FAIL</span></td> <td data-sort-v="1791985363873">13:42:43</td> <td data-sort-v="1791985440585">13:44:00</td> <td class="num" data-sort-v="76712">1m 17s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="96559">1m 37s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-023" data-title="Protected route is denied while logged out" data-status="PASS" data-cat="ui"> <td data-sort-v="29">29</td> <td>TC-AUTH-UI-023</td> <td>Protected route is denied while logged out</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985363946">13:42:43</td> <td data-sort-v="1791985371789">13:42:51</td> <td class="num" data-sort-v="7843">7.84s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="27690">27.69s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-024" data-title="A second protected route is likewise denied while logged out" data-status="PASS" data-cat="ui"> <td data-sort-v="30">30</td> <td>TC-AUTH-UI-024</td> <td>A second protected route is likewise denied while logged out</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985371796">13:42:51</td> <td data-sort-v="1791985376452">13:42:56</td> <td class="num" data-sort-v="4656">4.66s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="24503">24.5s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-025" data-title="Logout terminates the session" data-status="PASS" data-cat="ui"> <td data-sort-v="31">31</td> <td>TC-AUTH-UI-025</td> <td>Logout terminates the session</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985376460">13:42:56</td> <td data-sort-v="1791985383969">13:43:03</td> <td class="num" data-sort-v="7509">7.51s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="27356">27.36s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-026" data-title="Browser Back after logout does not restore authenticated content" data-status="PASS" data-cat="ui"> <td data-sort-v="32">32</td> <td>TC-AUTH-UI-026</td> <td>Browser Back after logout does not restore authenticated content</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985383977">13:43:03</td> <td data-sort-v="1791985393327">13:43:13</td> <td class="num" data-sort-v="9350">9.35s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="29197">29.2s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-027" data-title="Session identifier is rotated on logout" data-status="PASS" data-cat="ui"> <td data-sort-v="33">33</td> <td>TC-AUTH-UI-027</td> <td>Session identifier is rotated on logout</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985393334">13:43:13</td> <td data-sort-v="1791985400403">13:43:20</td> <td class="num" data-sort-v="7069">7.07s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="26916">26.92s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-028" data-title="Session cookie carries the correct security attributes" data-status="PASS" data-cat="ui"> <td data-sort-v="34">34</td> <td>TC-AUTH-UI-028</td> <td>Session cookie carries the correct security attributes</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985400410">13:43:20</td> <td data-sort-v="1791985405335">13:43:25</td> <td class="num" data-sort-v="4925">4.92s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="24772">24.77s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-029" data-title="Login POST is rejected when the CSRF token is tampered with" data-status="PASS" data-cat="ui"> <td data-sort-v="35">35</td> <td>TC-AUTH-UI-029</td> <td>Login POST is rejected when the CSRF token is tampered with</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985405341">13:43:25</td> <td data-sort-v="1791985409803">13:43:29</td> <td class="num" data-sort-v="4462">4.46s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="24309">24.31s</td> </tr>
+<tr data-tcid="TC-AUTH-UI-030" data-title="Security response headers are present on authenticated pages" data-status="PASS" data-cat="ui"> <td data-sort-v="36">36</td> <td>TC-AUTH-UI-030</td> <td>Security response headers are present on authenticated pages</td> <td><span class="badge PASS">PASS</span></td> <td data-sort-v="1791985409810">13:43:29</td> <td data-sort-v="1791985418386">13:43:38</td> <td class="num" data-sort-v="8576">8.58s</td> <td class="num" data-sort-v="0">0 ms</td> <td class="num" data-sort-v="19842">19.84s</td> <td class="num" data-sort-v="5">5 ms</td> <td class="num" data-sort-v="28423">28.42s</td> </tr>
+</tbody> </table> </div>
+<div class="tb-phase-note">Execution is each test's own duration from the Playwright run (tests overlap across 3 workers). Waiting is 0: no waits outside the tests were logged in this window (the ~60 s server timeouts in TC-AUTH-UI-020/022 are inside those tests' execution). Claude and Reporting are the run totals split evenly across the 36 test cases — an allocation, not a measurement.</div>
+</details>
+<details class="tb-sec" open><summary>5. Timeline</summary> <div class="dashboard-card"> <div class="tb-timeline">
+<div class="tb-tl-row"><div class="tb-tl-time">13:32:54</div><div class="tb-tl-label"><b>Run</b> started — Step 0 answered (AUTH)</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:36:01</div><div class="tb-tl-label"><b>Run 1</b> started (later discarded)</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:39:37</div><div class="tb-tl-label">Run 1 finished — 37/37 as expected</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:32</div><div class="tb-tl-label"><b>Run 2</b> started (reported)</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:36</div><div class="tb-tl-label">Login setup started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:42</div><div class="tb-tl-label">TC-AUTH-UI-001 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:42</div><div class="tb-tl-label">TC-AUTH-UI-002 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:42</div><div class="tb-tl-label">TC-AUTH-UI-003 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:51</div><div class="tb-tl-label">TC-AUTH-UI-004 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:51</div><div class="tb-tl-label">TC-AUTH-UI-005 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:53</div><div class="tb-tl-label">TC-AUTH-UI-006 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:41:57</div><div class="tb-tl-label">TC-AUTH-UI-009 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:00</div><div class="tb-tl-label">TC-AUTH-UI-010 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:00</div><div class="tb-tl-label">TC-AUTH-UI-011 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:02</div><div class="tb-tl-label">TC-AUTH-UI-012 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:05</div><div class="tb-tl-label">TC-AUTH-UI-013 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:10</div><div class="tb-tl-label">TC-AUTH-UI-014 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:14</div><div class="tb-tl-label">TC-AUTH-UI-015 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:17</div><div class="tb-tl-label">TC-AUTH-UI-016 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:17</div><div class="tb-tl-label">TC-AUTH-UI-017 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:22</div><div class="tb-tl-label">TC-AUTH-UI-018 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:26</div><div class="tb-tl-label">TC-AUTH-UI-007 started — <b>FAIL</b> (BUG-01)</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:26</div><div class="tb-tl-label">TC-AUTH-UI-008 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:27</div><div class="tb-tl-label">TC-AUTH-UI-019 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:34</div><div class="tb-tl-label">TC-AUTH-UI-020 started — <b>FAIL</b> (BUG-02)</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:37</div><div class="tb-tl-label">TC-AUTH-UI-021 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:43</div><div class="tb-tl-label">TC-AUTH-UI-022 started — <b>FAIL</b> (BUG-03)</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:43</div><div class="tb-tl-label">TC-AUTH-UI-023 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:51</div><div class="tb-tl-label">TC-AUTH-UI-024 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:42:56</div><div class="tb-tl-label">TC-AUTH-UI-025 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:03</div><div class="tb-tl-label">TC-AUTH-UI-026 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:13</div><div class="tb-tl-label">TC-AUTH-UI-027 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:20</div><div class="tb-tl-label">TC-AUTH-UI-028 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:25</div><div class="tb-tl-label">TC-AUTH-UI-029 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:29</div><div class="tb-tl-label">TC-AUTH-UI-030 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:39</div><div class="tb-tl-label">TC-AUTH-API-001 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:44</div><div class="tb-tl-label">TC-AUTH-API-002 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:46</div><div class="tb-tl-label">TC-AUTH-API-003 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:51</div><div class="tb-tl-label">TC-AUTH-API-004 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:51</div><div class="tb-tl-label">TC-AUTH-API-005 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:43:57</div><div class="tb-tl-label">TC-AUTH-API-006 started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:44:02</div><div class="tb-tl-label">Run 2 finished — 37/37 as expected</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:50:54</div><div class="tb-tl-label"><b>Reporting</b> started</div></div>
+<div class="tb-tl-row"><div class="tb-tl-time">13:50:55</div><div class="tb-tl-label"><b>Run</b> complete</div></div>
+</div> </div> </details>
+<details class="tb-sec" open><summary>6. Other / Overhead</summary> <div class="dashboard-card"> <div class="tb-overhead-box"> <div class="oh-title">What's in Other / Overhead (3m 42s) &mdash; click a row for details</div> <div class="tb-oh-rows">
+<div class="tb-oh-row tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Run 1 — discarded after review (evidence label covered the defect text)&quot;,&quot;start&quot;:&quot;2026-10-14 13:36:01 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:39:37 UTC&quot;,&quot;duration&quot;:&quot;3m 36s&quot;,&quot;share&quot;:&quot;20.0% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Run 1 — discarded after review (evidence label covered the defect text).&quot;],&quot;note&quot;:&quot;Time not covered by test execution, a Claude operation or reporting.&quot;}"><span class="oh-label">Run 1 — discarded after review (evidence label covered the defect text)</span><span class="oh-val">3m 36s</span><span class="oh-more">Details &rsaquo;</span></div>
+<div class="tb-oh-row tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Playwright start-up before run 2&quot;,&quot;start&quot;:&quot;2026-10-14 13:41:32 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:41:35 UTC&quot;,&quot;duration&quot;:&quot;3.14s&quot;,&quot;share&quot;:&quot;0.3% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Playwright start-up before run 2.&quot;],&quot;note&quot;:&quot;Time not covered by test execution, a Claude operation or reporting.&quot;}"><span class="oh-label">Playwright start-up before run 2</span><span class="oh-val">3.14s</span><span class="oh-more">Details &rsaquo;</span></div>
+<div class="tb-oh-row tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Idle inside run 2 (worker start-up / between tests)&quot;,&quot;start&quot;:&quot;2026-10-14 13:41:35 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:41:36 UTC&quot;,&quot;duration&quot;:&quot;1.28s&quot;,&quot;share&quot;:&quot;0.1% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Idle inside run 2 (worker start-up / between tests).&quot;],&quot;note&quot;:&quot;Time not covered by test execution, a Claude operation or reporting.&quot;}"><span class="oh-label">Idle inside run 2 (worker start-up / between tests)</span><span class="oh-val">1.28s</span><span class="oh-more">Details &rsaquo;</span></div>
+<div class="tb-oh-row tb-oh-click" role="button" tabindex="0" data-detail="{&quot;title&quot;:&quot;Idle inside run 2 (worker start-up / between tests)&quot;,&quot;start&quot;:&quot;2026-10-14 13:41:41 UTC&quot;,&quot;end&quot;:&quot;2026-10-14 13:41:42 UTC&quot;,&quot;duration&quot;:&quot;1.32s&quot;,&quot;share&quot;:&quot;0.1% of total&quot;,&quot;before&quot;:&quot;See the timeline.&quot;,&quot;after&quot;:&quot;See the timeline.&quot;,&quot;steps&quot;:[&quot;Idle inside run 2 (worker start-up / between tests).&quot;],&quot;note&quot;:&quot;Time not covered by test execution, a Claude operation or reporting.&quot;}"><span class="oh-label">Idle inside run 2 (worker start-up / between tests)</span><span class="oh-val">1.32s</span><span class="oh-more">Details &rsaquo;</span></div>
+</div> </div> </div> </details>
+<div class="tb-modal js-hidden" id="tbModal" role="dialog" aria-modal="true" aria-labelledby="tbModalTitle"> <div class="tb-modal-card"> <div class="tb-modal-head"><div class="tb-modal-title" id="tbModalTitle"></div><button type="button" class="tb-modal-x" id="tbModalClose" aria-label="Close">&times;</button></div> <div class="tb-modal-grid" id="tbModalGrid"></div> <h4>Right before</h4><p id="tbModalBefore"></p> <h4>What happened in this window</h4><ol id="tbModalSteps"></ol> <h4>Right after</h4><p id="tbModalAfter"></p> <div class="mnote" id="tbModalNote"></div> </div> </div>
+<script>
+(function(){
+  var search = document.getElementById('tcbSearch');
+  var statusFilter = document.getElementById('tcbStatusFilter');
+  var catFilter = document.getElementById('tcbCategoryFilter');
+  var resetBtn = document.getElementById('tcbReset');
+  var countEl = document.getElementById('tcbCount');
+  var noResults = document.getElementById('tcbNoResults');
+  var table = document.getElementById('tcbTable');
+  if(!table) return;
+  var tbody = table.tBodies[0];
+  var allRows = Array.prototype.slice.call(tbody.rows);
+  var total = allRows.length;
+
+  function applyFilter(){
+    var q = (search.value || '').trim().toLowerCase();
+    var st = statusFilter.value;
+    var ct = catFilter ? catFilter.value : '';
+    var shown = 0;
+    allRows.forEach(function(row){
+      var matchesQ = !q || (row.getAttribute('data-tcid').toLowerCase().indexOf(q) !== -1) ||
+                     (row.getAttribute('data-title').toLowerCase().indexOf(q) !== -1);
+      var matchesSt = !st || row.getAttribute('data-status') === st;
+      var matchesCt = !ct || row.getAttribute('data-cat') === ct;
+      var show = matchesQ && matchesSt && matchesCt;
+      row.classList.toggle('js-hidden', !show);
+      if(show) shown++;
+    });
+    countEl.textContent = shown + ' / ' + total + ' shown';
+    noResults.classList.toggle('js-hidden', shown !== 0);
+  }
+
+  search.addEventListener('input', applyFilter);
+  statusFilter.addEventListener('change', applyFilter);
+  if (catFilter) catFilter.addEventListener('change', applyFilter);
+  resetBtn.addEventListener('click', function(){
+    search.value = ''; statusFilter.value = ''; if (catFilter) catFilter.value = ''; applyFilter();
+  });
+
+  var sortState = { key: null, dir: 1 };
+  var headers = Array.prototype.slice.call(table.tHead.rows[0].cells);
+  headers.forEach(function(th, colIdx){
+    var key = th.getAttribute('data-sort');
+    if(!key) return;
+    th.addEventListener('click', function(){
+      var dir = (sortState.key === key) ? -sortState.dir : 1;
+      sortState = { key: key, dir: dir };
+      headers.forEach(function(h){ h.querySelectorAll('.sort-arrow').forEach(function(a){ a.remove(); }); });
+      var arrow = document.createElement('span');
+      arrow.className = 'sort-arrow';
+      arrow.textContent = dir === 1 ? '▴' : '▾';
+      th.appendChild(arrow);
+
+      var type = th.getAttribute('data-type');
+      var rows = Array.prototype.slice.call(tbody.rows);
+      rows.sort(function(a, b){
+        var av = a.cells[colIdx].getAttribute('data-sort-v');
+        var bv = b.cells[colIdx].getAttribute('data-sort-v');
+        if(type === 'num'){
+          av = parseFloat(av); bv = parseFloat(bv);
+          return (av - bv) * dir;
+        }
+        av = a.cells[colIdx].textContent.trim().toLowerCase();
+        bv = b.cells[colIdx].textContent.trim().toLowerCase();
+        return av.localeCompare(bv) * dir;
+      });
+      rows.forEach(function(r){ tbody.appendChild(r); });
+    });
+  });
+
+  applyFilter();
+})();
+</script>
+<script>
+(function(){
+  var reset = document.getElementById('tcbReset');
+  var table = document.getElementById('tcbTable');
+  if (!reset || !table) return;
+  var wrap = table.closest('.tb-table-wrap') || table.parentNode;
+  var noRes = document.getElementById('tcbNoResults');
+  function make(id, label, open){
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = id; b.textContent = label;
+    b.addEventListener('click', function(){
+      wrap.hidden = !open;
+      if (noRes) noRes.style.display = open ? '' : 'none';
+    });
+    return b;
+  }
+  reset.parentNode.insertBefore(make('tcbExpandAll', 'Expand all', true), reset);
+  reset.parentNode.insertBefore(make('tcbCollapseAll', 'Collapse all', false), reset);
+})();
+</script>
+<script>
+(function(){
+  var modal=document.getElementById("tbModal"); if(!modal) return;
+  var $=function(i){return document.getElementById(i)};
+  function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+  function open(row){
+    var d=JSON.parse(row.getAttribute("data-detail"));
+    $("tbModalTitle").textContent=d.title;
+    $("tbModalGrid").innerHTML=[["Start",d.start],["End",d.end],["Duration",d.duration],["Share of total",d.share]].map(function(x){return "<div class=\"mg\"><div class=\"k\">"+esc(x[0])+"</div><div class=\"v\">"+esc(x[1])+"</div></div>"}).join("");
+    $("tbModalBefore").textContent=d.before; $("tbModalAfter").textContent=d.after;
+    $("tbModalSteps").innerHTML=d.steps.map(function(s){return "<li>"+esc(s)+"</li>"}).join("");
+    $("tbModalNote").textContent=d.note||"";
+    modal.classList.remove("js-hidden"); $("tbModalClose").focus();
+  }
+  function close(){ modal.classList.add("js-hidden"); }
+  Array.prototype.forEach.call(document.querySelectorAll(".tb-oh-click"),function(r){
+    r.addEventListener("click",function(){open(r)});
+    r.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();open(r)} });
+  });
+  $("tbModalClose").addEventListener("click",close);
+  modal.addEventListener("click",function(e){ if(e.target===modal) close(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") close(); });
+})();
+</script>
+<script>
+(function(){
+  var secs=function(){return Array.prototype.slice.call(document.querySelectorAll("details.tb-sec"))};
+  var e=document.getElementById("tbExpandAll"), c=document.getElementById("tbCollapseAll");
+  if(e) e.addEventListener("click",function(){secs().forEach(function(d){d.open=true})});
+  if(c) c.addEventListener("click",function(){secs().forEach(function(d){d.open=false})});
+})();
+</script>
+</div></body>
+</html>
