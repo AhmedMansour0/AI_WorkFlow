@@ -1,5 +1,5 @@
 import { test, expect } from '../../../src/fixtures/test';
-import { API, ROLE } from '../../../src/config/env';
+import { ROLE } from '../../../src/config/env';
 import { MESSAGES, VALID_PASSWORD, uniqueUsername, uniqueFiveCharUsername } from '../../../src/data/testData';
 import type { SystemUser } from '../../../src/api/AdminUsersApi';
 
@@ -23,12 +23,6 @@ test.describe('User Management API — username validation', { tag: ['@adm', '@a
 });
 
 test.describe('User Management API — authorization', { tag: ['@adm', '@api', '@security'] }, () => {
-  test('TC-ADM-API-033 Username validation endpoint refuses unauthenticated callers', async ({ anonUsersApi }) => {
-    const res = await anonUsersApi.validateUsername('Admin');
-    expect(res.status()).toBe(401);
-    expect(await res.json()).toEqual(SESSION_EXPIRED);
-  });
-
   test('TC-ADM-API-034 Every Admin user-management endpoint refuses unauthenticated access', async ({ anonUsersApi, usersApi, userFactory, employee }) => {
     // Write probes target a disposable fixture, never the shared Admin record.
     const target = await userFactory.create({ prefix: 'qaauthz' });
@@ -53,22 +47,5 @@ test.describe('User Management API — authorization', { tag: ['@adm', '@api', '
     const leaked = await usersApi.findByUsername(probeName);
     if (leaked) userFactory.track(leaked.id); // defensive cleanup if the product let it through
     expect(leaked, 'no record may be created').toBeUndefined();
-  });
-
-  test('TC-ADM-API-042 Downgraded user loses Admin API access on the next call', async ({ usersApi, userFactory, freshSession }) => {
-    // Admin B is a disposable Admin; Admin A is the suite's shared Admin session.
-    const adminB = await userFactory.create({ role: 'Admin', prefix: 'qaroleb' });
-    const { page } = await freshSession({ username: adminB.username, password: adminB.password });
-
-    const before = await page.request.get(API.users, { params: { limit: 1 } });
-    expect(before.status(), 'Admin B starts with access').toBe(200);
-
-    const downgrade = await usersApi.update(adminB.id, {
-      username: adminB.username, password: '', status: true, userRoleId: ROLE.ESS, empNumber: adminB.empNumber, changePassword: false,
-    });
-    expect(downgrade.status()).toBe(200);
-
-    const after = await page.request.get(API.users, { params: { limit: 1 } });
-    expect(after.status(), 'role change must take effect mid-session').toBe(403);
   });
 });

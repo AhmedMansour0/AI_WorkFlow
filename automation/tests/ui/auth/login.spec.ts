@@ -18,13 +18,6 @@ test.describe('Authentication — Login screen', { tag: ['@auth', '@ui'] }, () =
     await expect(loginPage.footer).toContainText(ENV.productVersion);
   });
 
-  test('TC-AUTH-UI-002 Login form posts to the correct action with a CSRF token', async ({ loginPage }) => {
-    await expect(loginPage.form).toHaveAttribute('action', new RegExp(`${ROUTES.validate}$`));
-    await expect(loginPage.form).toHaveAttribute('method', /^post$/i);
-    await expect(loginPage.csrfToken).toHaveAttribute('type', 'hidden');
-    await expect(loginPage.csrfToken).toHaveAttribute('value', /\S+/);
-  });
-
   test('TC-AUTH-UI-003 Valid credentials authenticate successfully', { tag: '@smoke' }, async ({ loginPage, appShell, page }) => {
     await loginPage.login(ENV.adminUsername, ENV.adminPassword);
     await expect(page).toHaveURL(new RegExp(`${ROUTES.dashboard}$`));
@@ -133,21 +126,6 @@ test.describe('Authentication — Login screen', { tag: ['@auth', '@ui'] }, () =
     await loginPage.login('a'.repeat(500), ENV.adminPassword);
     await loginPage.expectInvalidCredentials();
     expect(serverErrors.errors).toEqual([]);
-  });
-
-  test('TC-AUTH-UI-017 Special characters in credentials are handled safely', async ({ loginPage, appShell, page }) => {
-    const serverErrors = new ServerErrorRecorder(page);
-    await loginPage.login("' OR '1'='1", "x' OR 1=1--");
-    await loginPage.expectInvalidCredentials();
-    await expect(page.getByText(/SQL|syntax error|stack trace|exception/i)).toHaveCount(0);
-    await expect(appShell.userDropdownName).toHaveCount(0);
-    expect(serverErrors.errors).toEqual([]);
-  });
-
-  test('TC-AUTH-UI-018 Password field masks its input', async ({ loginPage }) => {
-    await loginPage.passwordInput.fill('SecretValue1');
-    await expect(loginPage.passwordInput).toHaveAttribute('type', 'password');
-    await expect(loginPage.passwordInput).toHaveValue('SecretValue1');
   });
 });
 

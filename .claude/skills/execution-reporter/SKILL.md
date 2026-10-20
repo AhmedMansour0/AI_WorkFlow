@@ -55,6 +55,28 @@ Rules:
   - Executive Summary (Total Executed, Pass, Fail, Pass Rate). Include the execution date in the `<h1>` title.
   - Execution Details: Collapsible sections for Passed and Failed test cases showing ID, Description, Expected, and Actual results.
   - **API test cases: Request & Response viewer.** Add a second toggle button next to the existing "View Test Case" button (for example "View Request & Response"). It expands a panel showing the captured request (method, URL, headers, body) and response (status, headers, body), styled with the template's request/response blocks. Redact session cookies, tokens and passwords.
+  - **Hops: one entry per HTTP call in the test case (mimic the template's "Hops (n)" block).** A *hop* is one request/response in the chain a test case drives (for example: `GET /auth/login` → `POST /auth/validate` → `GET /dashboard/index`). When a test case makes **two or more** calls, list them in a collapsible `Hops (n)` block placed right after the Evidence block, instead of the single case-level Request & Response panel. A case with only one call keeps the single panel (`tc-reqres-anchor` + `tc-reqres-panel`).
+    - Each hop gets its own status badge (`PASS` / `FAIL` / `BLOCKED`), so the reader can see exactly which call in the chain broke. A failed case's failing hop carries `FAIL`; hops after a blocking failure that never ran are left out, not invented.
+    - Each hop shows five one-line rows: **Request** (method, path, key inputs), **Response** (status plus a short summary), **Expected**, **Actual**, **Evidence**. Below them goes the full Request & Response viewer for that call (`hop-reqres-panel`, same `rr-*` blocks and the same redaction rules).
+    - Do not write the toggle link yourself. The template's script finds every `.hop`, hides its `.hop-reqres-panel` and inserts a "View req & response" / "Hide req & response" link after `.hop-endpoint`. Copy the template's `.hop*` / `details.hops` CSS and that script unchanged. If a hop has no captured panel, the script hides the Request and Response rows behind the same link instead.
+    - Record every hop **while executing** (from the Playwright MCP network log, the `page.on('response')` / `request.*` calls, or the API client). Hops cannot be reconstructed afterwards; if a call was not captured, leave it out rather than guessing its payload.
+    - Markup (one `.hop` per call, numbered in call order, `n` = number of hops):
+      ```html
+      <details class="hops"><summary>Hops (n)</summary>
+      <div class="hop"><span class="badge PASS">PASS</span> <span class="hop-endpoint">1. Login page</span>
+      <div class="hd"><b>Request:</b> GET /web/index.php/auth/login</div>
+      <div class="hd"><b>Response:</b> 200 - login form with CSRF token</div>
+      <div class="hd"><b>Expected:</b> HTTP 200, login form rendered</div>
+      <div class="hd"><b>Actual:</b> 200 - login form rendered</div>
+      <div class="hd"><b>Evidence:</b> 200 in 0.4 s</div>
+      <div class="hop-reqres-panel">
+        <!-- rr-title Request / rr-line / rr-label HEADERS / rr-box rr-headers-box / rr-label BODY / rr-box rr-body-box<pre>
+             rr-title Response (style="margin-top:18px;") / rr-line Status code / headers / body / rr-note -->
+      </div>
+      </div>
+      <!-- 2. POST /auth/validate ..., 3. GET /dashboard/index ... -->
+      </details>
+      ```
   - **Evidence screenshots with a red label on the bug.** For every failed test case, the Evidence section must contain a screenshot of the defect:
     - Take the screenshot with the Playwright MCP at the moment the defect is visible.
     - Before capturing, mark the bug area: draw a red outline around the defective element and attach a short red label stating the defect (for example "BUG-01: Account disabled ≠ Invalid credentials").

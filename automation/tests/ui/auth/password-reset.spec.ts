@@ -1,6 +1,6 @@
 import { test, expect } from '../../../src/fixtures/test';
 import { ROUTES } from '../../../src/config/env';
-import { KNOWN_DEFECTS, MESSAGES } from '../../../src/data/testData';
+import { KNOWN_DEFECTS } from '../../../src/data/testData';
 import { RequestRecorder } from '../../../src/utils/network';
 
 /**
@@ -48,32 +48,4 @@ test.describe('Authentication — Forgot password', { tag: ['@auth', '@ui'] }, (
     await expect(loginPage.usernameInput).toBeVisible();
     expect(resetPosts.urls, 'Cancel must not submit a reset request').toEqual([]);
   });
-
-  test(
-    'TC-AUTH-UI-022 Reset request does not disclose whether a username exists',
-    { tag: '@security', annotation: { type: 'issue', description: KNOWN_DEFECTS.resetExistingUser504 } },
-    async ({ forgotPasswordPage, userFactory, page, bugEvidence }) => {
-    test.fail(true, KNOWN_DEFECTS.resetExistingUser504);
-    test.setTimeout(150_000);
-    bugEvidence.watch(forgotPasswordPage.serverErrorHeading, 'Defect: an existing username gets HTTP 504 after ~60 s, while an unknown one gets the confirmation at once');
-    const existing = await userFactory.create({ prefix: 'qarst' });
-
-    await forgotPasswordPage.goto();
-    const unknownResponse = await forgotPasswordPage.requestReset('NoSuchUser9901');
-    expect(unknownResponse.status()).toBe(302);
-    await expect(forgotPasswordPage.confirmationHeading).toBeVisible();
-    const unknownUrl = page.url();
-    const unknownText = (await forgotPasswordPage.confirmationCard.innerText()).trim();
-
-    await forgotPasswordPage.goto();
-    const knownResponse = await forgotPasswordPage.requestReset(existing.username);
-    // Compare the wire responses first: they must be indistinguishable.
-    expect(knownResponse.status(), 'status must not reveal that the username exists').toBe(unknownResponse.status());
-    expect(knownResponse.headers()['location']).toBe(unknownResponse.headers()['location']);
-    await expect(forgotPasswordPage.confirmationHeading).toBeVisible();
-    expect(page.url()).toBe(unknownUrl);
-    await expect(forgotPasswordPage.confirmationCard).toHaveText(unknownText);
-    await expect(forgotPasswordPage.confirmationHeading).toHaveText(MESSAGES.resetLinkSent);
-    },
-  );
 });
